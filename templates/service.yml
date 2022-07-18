@@ -1,0 +1,512 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minecraft Service
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application to deploy
+  EnvironmentName:
+    Type: String
+    Description: The name of the environment to deploy
+  DomainName:
+    Type: String
+    Description: The domain name to use
+  HostedZoneName:
+    Type: String
+    Description: The name of the hosted zone to use
+  VpcName:
+    Type: String
+    Description: The name of the VPC to use
+  Memory:
+    Type: Number
+    Description: The amount of memory to use (in MB)
+  Cpu:
+    Type: Number
+    Description: The number of Fargate CPU units to use
+  WatchdogImageUri:
+    Type: String
+    Description: The URI of the watchdog image to use
+  OverviewerImageUri:
+    Type: String
+    Description: The URI of the minecraft overviewer image to use
+  MinecraftVersion:
+    Type: String
+    Description: The version of Minecraft to use
+  MinecraftSeed:
+    Type: String
+    Description: The level seed to use
+  MinecraftOps:
+    Type: CommaDelimitedList
+    Description: The names of each server op
+  MinecraftMotd:
+    Type: String
+    Description: The Minecraft server message of the day
+  MapBucketName:
+    Type: String
+    Description: The name of the S3 bucket to use for the map
+  MapBucketArn:
+    Type: String
+    Description: The ARN of the S3 bucket to use for the map
+
+
+Conditions:
+  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
+
+
+Resources:
+  Topic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${ApplicationName}-${EnvironmentName}
+      DisplayName: !Sub ${ApplicationName}-${EnvironmentName}
+
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      BackupPolicy:
+        Status: ENABLED
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub ${ApplicationName}-${EnvironmentName}-storage
+  FileSystemAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref FileSystem
+      PosixUser:
+        Gid: '1000'
+        Uid: '1000'
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: '1000'
+          OwnerUid: '1000'
+          Permissions: '0755'
+        Path: /minecraft
+      AccessPointTags:
+        - Key: Name
+          Value: !Sub ${ApplicationName}-${EnvironmentName}-minecraft
+  FileSystemRenderAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref FileSystem
+      PosixUser:
+        Gid: '1000'
+        Uid: '1000'
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: '1000'
+          OwnerUid: '1000'
+          Permissions: '0755'
+        Path: /render
+      AccessPointTags:
+        - Key: Name
+          Value: !Sub ${ApplicationName}-${EnvironmentName}-render
+  FileSystemEfsMountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId: !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-a-public-id}}'
+      SecurityGroups:
+        - !GetAtt ServiceSecurityGroup.GroupId
+  FileSystemEfsMountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId: !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-b-public-id}}'
+      SecurityGroups:
+        - !GetAtt ServiceSecurityGroup.GroupId
+  FileSystemEfsMountTargetC:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId: !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-c-public-id}}'
+      SecurityGroups:
+        - !GetAtt ServiceSecurityGroup.GroupId
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ApplicationName}-${EnvironmentName}-ecs-execution-role
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ApplicationName}-${EnvironmentName}-task-role
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ApplicationName}-${EnvironmentName}-task-permissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                  - elasticfilesystem:DescribeFileSystems
+                Resource:
+                  - !GetAtt FileSystem.Arn
+                Condition:
+                  StringEquals:
+                    elasticfilesystem:AccessPointArn: !GetAtt FileSystemAccessPoint.Arn
+              - Effect: Allow
+                Action:
+                  - ecs:*
+                Resource:
+                  - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:service/${ApplicationName}-${EnvironmentName}/${ApplicationName}-${EnvironmentName}
+                  - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task/${ApplicationName}-${EnvironmentName}/*
+              - Action: ec2:DescribeNetworkInterfaces
+                Effect: Allow
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - route53:GetHostedZone
+                  - route53:ChangeResourceRecordSets
+                  - route53:ListResourceRecordSets
+                Resource:
+                  - !Sub
+                    - arn:${AWS::Partition}:route53:::hostedzone/${HostedZoneId}
+                    - HostedZoneId: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref Topic
+              - Effect: Allow
+                Action: events:PutEvents
+                Resource: !Sub arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/default
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub ${MapBucketArn}
+                  - !Sub ${MapBucketArn}/*
+
+  ServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Sub '{{resolve:ssm:/vpc/${VpcName}/vpc-id}}'
+      GroupName: !Sub ${ApplicationName}-${EnvironmentName}-service
+      GroupDescription: Security group for Minecraft on-demand
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: '-1'
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: from 0.0.0.0/0:25565
+          FromPort: 25565
+          IpProtocol: tcp
+          ToPort: 25565
+  ServiceSecurityGroupSelfIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow all self ingress
+      GroupId: !GetAtt ServiceSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt ServiceSecurityGroup.GroupId
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${ApplicationName}-${EnvironmentName}
+  ClusterCapacityProviderAssociation:
+    Type: AWS::ECS::ClusterCapacityProviderAssociations
+    Properties:
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      Cluster: !Ref Cluster
+      DefaultCapacityProviderStrategy: []
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref Cluster
+      ServiceName: !Sub ${ApplicationName}-${EnvironmentName}
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 0
+      EnableECSManagedTags: true
+      PlatformVersion: LATEST
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Base: 1
+          Weight: 1
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !GetAtt ServiceSecurityGroup.GroupId
+          Subnets:
+            - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-a-public-id}}'
+            - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-b-public-id}}'
+            - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-c-public-id}}'
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - FileSystemEfsMountTargetA
+      - FileSystemEfsMountTargetB
+      - FileSystemEfsMountTargetC
+    Properties:
+      Family: !Sub ${ApplicationName}-${EnvironmentName}-task-definition
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: !Ref Cpu
+      Memory: !Ref Memory
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: data
+          EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId: !Ref FileSystemAccessPoint
+              IAM: ENABLED
+            TransitEncryption: ENABLED
+            FilesystemId: !Ref FileSystem
+      ContainerDefinitions:
+        - Name: !Sub ${ApplicationName}-${EnvironmentName}-minecraft
+          Image: itzg/minecraft-server
+          Essential: false
+          PortMappings:
+            - ContainerPort: 25565
+              HostPort: 25565
+              Protocol: tcp
+          Environment:
+            - Name: EULA
+              Value: 'TRUE'
+            - Name: TYPE
+              Value: SPIGOT
+            - Name: OVERRIDE_SERVER_PROPERTIES
+              Value: 'true'
+            - Name: VERSION
+              Value: !Ref MinecraftVersion
+            - Name: SEED
+              Value: !Ref MinecraftSeed
+            - Name: MOTD
+              Value: !Ref MinecraftMotd
+            - Name: DIFFICULTY
+              Value: hard
+            - Name: SPAWN_PROTECTION
+              Value: '0'
+            - Name: OPS
+              Value: !Join [',', !Ref MinecraftOps]
+            - Name: MEMORY
+              Value: 14G
+            - Name: USE_AIKAR_FLAGS
+              Value: 'true'
+            - Name: VIEW_DISTANCE
+              Value: '24'
+            - Name: SPIGET_RESOURCES
+              Value: !Join
+                - ','
+                - - '81534' # chunky
+          MountPoints:
+            - ContainerPath: /data
+              ReadOnly: false
+              SourceVolume: data
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref MinecraftLogGroup
+              awslogs-stream-prefix: ecs
+        - Name: !Sub ${ApplicationName}-${EnvironmentName}-watchdog
+          Image: !Ref WatchdogImageUri
+          Essential: true
+          Environment:
+            - Name: CLUSTER
+              Value: !Sub ${ApplicationName}-${EnvironmentName}
+            - Name: SERVICE
+              Value: !Sub ${ApplicationName}-${EnvironmentName}
+            - Name: DNSZONE
+              Value: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
+            - Name: SERVERNAME
+              Value: !Ref DomainName
+            - Name: SNSTOPIC
+              Value: !Ref Topic
+            - Name: STARTUPMIN
+              Value: '10'
+            - Name: SHUTDOWNMIN
+              Value: '20'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref WatchdogLogGroup
+              awslogs-stream-prefix: ecs
+  MinecraftLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /${ApplicationName}/${EnvironmentName}/minecraft
+  WatchdogLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /${ApplicationName}/${EnvironmentName}/watchdog
+
+  MapTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - FileSystemEfsMountTargetA
+      - FileSystemEfsMountTargetB
+      - FileSystemEfsMountTargetC
+    Properties:
+      Family: !Sub ${ApplicationName}-${EnvironmentName}-map-task-definition
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: !Ref Cpu
+      Memory: !Ref Memory
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: data
+          EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId: !Ref FileSystemAccessPoint
+              IAM: ENABLED
+            TransitEncryption: ENABLED
+            FilesystemId: !Ref FileSystem
+        - Name: render
+          EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId: !Ref FileSystemRenderAccessPoint
+              IAM: ENABLED
+            TransitEncryption: ENABLED
+            FilesystemId: !Ref FileSystem
+      ContainerDefinitions:
+        - Name: !Sub ${ApplicationName}-${EnvironmentName}-minecraft-overviewer
+          Image: !Ref OverviewerImageUri
+          Environment:
+            - Name: MINECRAFT_VERSION
+              Value: !Ref MinecraftVersion
+            - Name: S3_BUCKET
+              Value: !Ref MapBucketName
+          MountPoints:
+            - ContainerPath: /home/minecraft/server
+              ReadOnly: true
+              SourceVolume: data
+            - ContainerPath: /home/minecraft/render
+              ReadOnly: false
+              SourceVolume: render
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref OverviewerLogGroup
+              awslogs-stream-prefix: ecs
+  OverviewerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /${ApplicationName}/${EnvironmentName}/overviewer
+
+  EventBridgeRuleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ApplicationName}-${EnvironmentName}-schedule-rule-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ApplicationName}-${EnvironmentName}-schedule-rule-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource:
+                  - !GetAtt TaskRole.Arn
+                  - !GetAtt ExecutionRole.Arn
+              - Effect: Allow
+                Action: ecs:RunTask
+                Resource: !Ref MapTaskDefinition
+  ScheduledOverviewerRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${ApplicationName}-${EnvironmentName}-scheduled-render
+      Description: EventBridge rule that will trigger a render every day
+      ScheduleExpression: cron(0 0 ? * MON *)
+      RoleArn: !GetAtt EventBridgeRuleRole.Arn
+      State: !If
+        - IsProd
+        - ENABLED
+        - DISABLED
+      Targets:
+        - Arn: !GetAtt Cluster.Arn
+          Id: !Sub ${ApplicationName}-${EnvironmentName}-scheduled-render
+          RoleArn: !GetAtt EventBridgeRuleRole.Arn
+          EcsParameters:
+            LaunchType: FARGATE
+            TaskDefinitionArn: !Ref MapTaskDefinition
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - !GetAtt ServiceSecurityGroup.GroupId
+                Subnets:
+                  - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-a-public-id}}'
+                  - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-b-public-id}}'
+                  - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-c-public-id}}'
+
+
+Outputs:
+  EcsCluster:
+    Value: !Ref Cluster
+    Description: The ID of the cluster
+  EcsService:
+    Value: !GetAtt Service.Name
+    Description: The ID of the service
+  MinecraftLogGroup:
+    Value: !Ref MinecraftLogGroup
+    Description: The name of the minecraft log group
+  WatchdogLogGroup:
+    Value: !Ref WatchdogLogGroup
+    Description: The name of the watchdog log group
+  OverviewerLogGroup:
+    Value: !Ref OverviewerLogGroup
+    Description: The name of the overviewer log group
+  FileSystemArn:
+    Value: !GetAtt FileSystem.Arn
+    Description: The ARN of the EFS
+  FileSystemId:
+    Value: !Ref FileSystem
+    Description: The ID of the EFS filesystem
+  FileSystemAccessPointArn:
+    Value: !GetAtt FileSystemAccessPoint.Arn
+    Description: The ARN of the EFS FileSystem access point
+  ServiceSecurityGroupId:
+    Value: !GetAtt ServiceSecurityGroup.GroupId
+    Description: The ID of the service's security group
+  MapRenderRule:
+    Value: !Ref ScheduledOverviewerRule
+    Description: The name of the EventBridge rule that triggers map renders
+  MapTaskDefinitionArn:
+    Value: !Ref MapTaskDefinition
+    Description: The ARN of the overviewer task definition
+  TaskRoleArn:
+    Value: !GetAtt TaskRole.Arn
+    Description: The ARN of the service task role
+  ExecutionRoleArn:
+    Value: !GetAtt ExecutionRole.Arn
+    Description: The ARN of the service execution role

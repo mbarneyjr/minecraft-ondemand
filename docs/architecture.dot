@@ -1,0 +1,40 @@
+digraph "Diagram" {
+  rankdir=LR
+  // ranksep=.25
+  // style=rounded
+  compound=true
+  newrank=true
+  splines = polyline
+  imagepath="./images"
+  node [shape="box"]
+
+  // "../images/64x-padded/Amazon-Elastic-Container-Service_Container1_light-bg4x.png"
+  mc_client [label="Minecraft\nClient" labelloc=b image="64x-padded/General4x.png"]
+  hosted_zone [label="Hosted\nZone" labelloc=b image="64x-padded/Amazon-Route-53_Hosted-Zone_light-bg4x.png"]
+  dns_log_group [label="Log\nGroup" labelloc=b image="64x-padded/Amazon-CloudWatch4x.png"]
+  subscription_filter_lambda [label="Log\nGroup" labelloc=b image="64x-padded/AWS-Lambda_Lambda-Function_light-bg4x.png"]
+  ecs_service [label="ECS\nService" labelloc=b image="64x-padded/Amazon-Elastic-Container-Service_Service_light-bg4x.png"]
+  minecraft_container [label="Minecraft\nContainer" labelloc=b image="64x-padded/Amazon-Elastic-Container-Service_Container1_light-bg4x.png"]
+  watchdog_container [label="Watchdog\nContainer" labelloc=b image="64x-padded/Amazon-Elastic-Container-Service_Container2_light-bg4x.png"]
+
+  mc_client -> hosted_zone [label="1. Client makes DNS\nrequest for host"]
+  hosted_zone -> dns_log_group [label="2. Hosted Zone\nlogs DNS request"]
+  dns_log_group -> subscription_filter_lambda [label="3. Subscription filter\ntriggers Lambda"]
+  subscription_filter_lambda -> ecs_service [label="4. Lambda updates ECS service\nto create new container"]
+  ecs_service -> minecraft_container [label="5. ECS service\ncreates new container"]
+  ecs_service -> watchdog_container
+  mc_client -> minecraft_container [label="6. Client connects\nto the service"]
+  watchdog_container -> ecs_service [label="7. Watchdog\ncontainer terminates\nservice if inactive"]
+
+  {
+    rank=same
+    hosted_zone
+  }
+  {
+    rank=same
+    minecraft_container
+    ecs_service
+    subscription_filter_lambda
+    dns_log_group
+  }
+}

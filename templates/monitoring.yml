@@ -1,0 +1,238 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minecraft Monitoring
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application to deploy
+  EnvironmentName:
+    Type: String
+    Description: The name of the environment to deploy
+  EcsCluster:
+    Type: String
+    Description: The ID of the cluster
+  EcsService:
+    Type: String
+    Description: The ID of the service
+  Memory:
+    Type: Number
+    Description: The amount of memory to use (in MB)
+  TriggerFunctionName:
+    Type: String
+    Description: The name of the trigger function
+  MinecraftLogGroupName:
+    Type: String
+    Description: The name of the minecraft log group
+  WatchdogLogGroupName:
+    Type: String
+    Description: The name of the watchdog log group
+  OverviewerLogGroupName:
+    Type: String
+    Description: The name of the overviewer log group
+  FileSystemId:
+    Type: String
+    Description: The ID of the EFS filesystem
+  MapRenderRule:
+    Type: String
+    Description: The name of the EventBridge rule that triggers map renders
+
+
+Resources:
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${ApplicationName}-${EnvironmentName}-monitoring
+
+  MapRenderRuleFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${ApplicationName}-${EnvironmentName}-map-render-rule-failure
+      AlarmDescription: Failure alarm for map render scheduled EventBridge rule
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 1
+      MetricName: FailedInvocations
+      Namespace: AWS/Events
+      Dimensions:
+        - Name: RuleName
+          Value: !Ref MapRenderRule
+      Statistic: Sum
+      Period: 86400
+      ActionsEnabled: True
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmTopic
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub ${ApplicationName}-${EnvironmentName}
+      DashboardBody: !Sub |
+        {
+          "widgets": [{
+            "x": 0,
+            "y": 0,
+            "width": 5,
+            "height": 6,
+            "type": "metric",
+            "properties": {
+              "title": "Memory Utilization",
+              "metrics": [
+                [ "AWS/ECS", "MemoryUtilization", "ServiceName", "${EcsService}", "ClusterName", "${EcsCluster}" ]
+              ],
+              "view": "gauge",
+              "region": "${AWS::Region}",
+              "yAxis": {
+                "left": { "min": 0, "max": 100 }
+              },
+              "period": 300,
+              "liveData": false,
+              "stat": "Average",
+              "legend": { "position": "hidden" },
+              "setPeriodToTimeRange": false,
+              "sparkline": true
+            }
+          }, {
+            "x": 5,
+            "y": 0,
+            "width": 5,
+            "height": 6,
+            "type": "metric",
+            "properties": {
+              "title": "CPU Utilization",
+              "metrics": [
+                [ "AWS/ECS", "CPUUtilization", "ServiceName", "${EcsService}", "ClusterName", "${EcsCluster}" ]
+              ],
+              "view": "gauge",
+              "region": "${AWS::Region}",
+              "yAxis": {
+                "left": { "min": 0, "max": 100 }
+              },
+              "period": 300,
+              "liveData": false,
+              "stat": "Average",
+              "setPeriodToTimeRange": false,
+              "sparkline": true,
+              "legend": { "position": "hidden" }
+            }
+          }, {
+            "x": 10,
+            "y": 0,
+            "width": 2,
+            "height": 3,
+            "type": "metric",
+            "properties": {
+              "title": "Memory Utilization",
+              "metrics": [
+                [{ "expression": "(m1/100)*${Memory}", "label": "Memory", "id": "e1", "region": "${AWS::Region}" }],
+                [ "AWS/ECS", "MemoryUtilization", "ServiceName", "${EcsService}", "ClusterName", "${EcsCluster}", { "id": "m1", "visible": false }]
+              ],
+              "sparkline": false,
+              "view": "singleValue",
+              "region": "${AWS::Region}",
+              "stat": "Average",
+              "period": 300,
+              "singleValueFullPrecision": false,
+              "liveData": false
+            }
+          }, {
+            "x": 10,
+            "y": 3,
+            "width": 2,
+            "height": 3,
+            "type": "metric",
+            "properties": {
+              "title": "World Size",
+              "sparkline": false,
+              "view": "singleValue",
+              "metrics": [
+                [ "AWS/EFS", "StorageBytes", "StorageClass", "Total", "FileSystemId", "${FileSystemId}" ]
+              ],
+              "region": "${AWS::Region}",
+              "liveData": true,
+              "singleValueFullPrecision": false,
+              "period": 300
+            }
+        }, {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 6,
+            "type": "metric",
+            "properties": {
+              "title": "Resource Utilization",
+              "metrics": [
+                [ "AWS/ECS", "MemoryUtilization", "ServiceName", "${EcsService}", "ClusterName", "${EcsCluster}" ],
+                [ "AWS/ECS", "CPUUtilization", "ServiceName", "${EcsService}", "ClusterName", "${EcsCluster}" ]
+              ],
+              "view": "timeSeries",
+              "stacked": false,
+              "region": "${AWS::Region}",
+              "stat": "Average",
+              "period": 300
+            }
+          }, {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 6,
+            "type": "metric",
+            "properties": {
+              "title": "Service Trigger Requests",
+              "metrics": [
+                [ "AWS/Lambda", "Invocations", "FunctionName", "${TriggerFunctionName}" ]
+              ],
+              "sparkline": true,
+              "view": "timeSeries",
+              "region": "${AWS::Region}",
+              "stat": "Sum",
+              "period": 1,
+              "stacked": false,
+              "legend": { "position": "hidden" },
+              "liveData": true,
+              "yAxis": {
+                "right": { "showUnits": true }
+              }
+            }
+          }, {
+            "x": 12,
+            "y": 0,
+            "width": 12,
+            "height": 6,
+            "type": "log",
+            "properties": {
+              "title": "Minecraft Logs",
+              "query": "SOURCE '${MinecraftLogGroupName}' | fields @timestamp, @message | sort @timestamp desc | limit 50",
+              "region": "${AWS::Region}",
+              "stacked": false,
+              "view": "table"
+            }
+          }, {
+            "x": 12,
+            "y": 6,
+            "width": 12,
+            "height": 6,
+            "type": "log",
+            "properties": {
+              "title": "Watchdog Logs",
+              "query": "SOURCE '${WatchdogLogGroupName}' | fields @timestamp, @message | sort @timestamp desc | limit 50",
+              "region": "${AWS::Region}",
+              "stacked": false,
+              "view": "table"
+            }
+          }, {
+            "x": 12,
+            "y": 12,
+            "width": 12,
+            "height": 6,
+            "type": "log",
+            "properties": {
+              "title": "Overviewer Logs",
+              "query": "SOURCE '${OverviewerLogGroupName}' | fields @timestamp, @message | sort @timestamp desc | limit 50",
+              "region": "${AWS::Region}",
+              "stacked": false,
+              "view": "table"
+            }
+          }]
+        }

@@ -1,0 +1,197 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minecraft Ondemand
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application to deploy
+  EnvironmentName:
+    Type: String
+    Description: The name of the environment to deploy
+  HostedZoneName:
+    Type: String
+    Description: The name of the hosted zone to use
+  DomainName:
+    Type: String
+    Description: The domain name to use
+  DnsLogGroupName:
+    Type: String
+    Description: The ID of the hosted zone to use
+  VpcName:
+    Type: String
+    Description: The domain name to use
+  Memory:
+    Type: Number
+    Description: The amount of memory to use (in MB)
+    Default: 8192
+  Cpu:
+    Type: Number
+    Description: The number of Fargate CPU units to use
+    Default: 1024
+  WatchdogImageUri:
+    Type: String
+    Description: The URI of the watchdog image to use
+  OverviewerImageUri:
+    Type: String
+    Description: The URI of the MinecraftOverviewer image to use
+  MinecraftVersion:
+    Type: String
+    Description: The version of Minecraft to use
+  MinecraftSeed:
+    Type: String
+    Description: The level seed to use
+    Default: ''
+  MinecraftOps:
+    Type: CommaDelimitedList
+    Description: The names of each server op
+  MinecraftMotd:
+    Type: String
+    Description: The Minecraft server message of the day
+
+
+Conditions:
+  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
+
+
+Resources:
+  Map:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/map.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        HostedZoneName: !Ref HostedZoneName
+        DomainName: !Sub map.${DomainName}
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: map
+
+  Site:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/site.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        HostedZoneName: !Ref HostedZoneName
+        DomainName: !Ref DomainName
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: site
+
+  Service:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/service.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        DomainName: !Ref DomainName
+        HostedZoneName: !Ref HostedZoneName
+        VpcName: !Ref VpcName
+        Memory: !Ref Memory
+        Cpu: !Ref Cpu
+        MinecraftVersion: !Ref MinecraftVersion
+        MinecraftSeed: !Ref MinecraftSeed
+        MinecraftOps: !Join [',', !Ref MinecraftOps]
+        MapBucketArn: !GetAtt Map.Outputs.MapBucketArn
+        MapBucketName: !GetAtt Map.Outputs.MapBucketName
+        MinecraftMotd: !Ref MinecraftMotd
+        WatchdogImageUri: !Ref WatchdogImageUri
+        OverviewerImageUri: !Ref OverviewerImageUri
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: site
+
+  Trigger:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/trigger.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        VpcName: !Ref VpcName
+        DomainName: !Ref DomainName
+        DnsLogGroupName: !Ref DnsLogGroupName
+        EcsCluster: !GetAtt Service.Outputs.EcsCluster
+        EcsService: !GetAtt Service.Outputs.EcsService
+        MapTaskDefinition: !GetAtt Service.Outputs.MapTaskDefinitionArn
+        ServiceSecurityGroupId: !GetAtt Service.Outputs.ServiceSecurityGroupId
+        TaskRoleArn: !GetAtt Service.Outputs.TaskRoleArn
+        ExecutionRoleArn: !GetAtt Service.Outputs.ExecutionRoleArn
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: trigger
+
+  DataSync:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/datasync.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        VpcName: !Ref VpcName
+        FileSystemArn: !GetAtt Service.Outputs.FileSystemArn
+        FileSystemAccessPointArn: !GetAtt Service.Outputs.FileSystemAccessPointArn
+        ServiceSecurityGroupId: !GetAtt Service.Outputs.ServiceSecurityGroupId
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: datasync
+
+  Monitoring:
+    Type: AWS::CloudFormation::Stack
+    Condition: IsProd
+    Properties:
+      TemplateURL: ./templates/monitoring.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        EcsCluster: !GetAtt Service.Outputs.EcsCluster
+        EcsService: !GetAtt Service.Outputs.EcsService
+        Memory: !Ref Memory
+        TriggerFunctionName: !GetAtt Trigger.Outputs.FunctionName
+        MinecraftLogGroupName: !GetAtt Service.Outputs.MinecraftLogGroup
+        WatchdogLogGroupName: !GetAtt Service.Outputs.WatchdogLogGroup
+        OverviewerLogGroupName: !GetAtt Service.Outputs.OverviewerLogGroup
+        FileSystemId: !GetAtt Service.Outputs.FileSystemId
+        MapRenderRule: !GetAtt Service.Outputs.MapRenderRule
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: monitoring
+
+  Bastion:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/bastion.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        VpcName: !Ref VpcName
+        ServiceSecurityGroupId: !GetAtt Service.Outputs.ServiceSecurityGroupId
+        FileSystemAccessPointArn: !GetAtt Service.Outputs.FileSystemAccessPointArn
+        FileSystemArn: !GetAtt Service.Outputs.FileSystemArn
+      Tags:
+        - Key: workload
+          Value: !Sub ${ApplicationName}-${EnvironmentName}
+        - Key: component
+          Value: bastion
+
+
+Outputs:
+  SiteBucketName:
+    Description: The name of the S3 bucket hosting the site
+    Value: !GetAtt Site.Outputs.SiteBucketName

@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minecraft Bastion
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application to deploy
+  EnvironmentName:
+    Type: String
+    Description: The name of the environment to deploy
+  VpcName:
+    Type: String
+    Description: The name of the VPC to use
+  FileSystemArn:
+    Type: String
+    Description: The ARN of the EFS FileSystem
+  FileSystemAccessPointArn:
+    Type: String
+    Description: The ARN of the EFS FileSystem access point
+  ServiceSecurityGroupId:
+    Type: String
+    Description: The ID of the service's security group
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    Description: AMI ID pointer in SSM. Default latest AMI Amazon Linux2.
+  InstanceType:
+    Type: String
+    Description: The type of Amazon EC2 Linux instances that will be launched for this project.
+    Default: t3.micro
+
+
+Resources:
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ApplicationName}-${EnvironmentName}-bastion
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ApplicationName}-${EnvironmentName}-efs-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                  - elasticfilesystem:DescribeFileSystems
+                Resource:
+                  - !Ref FileSystemArn
+                Condition:
+                  StringEquals:
+                    elasticfilesystem:AccessPointArn: !Ref FileSystemAccessPointArn
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: InstanceRole
+
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${ApplicationName}-${EnvironmentName}-bastion
+      LaunchTemplateData:
+        ImageId: !Ref LatestAmiId
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile:
+          Arn: !GetAtt InstanceProfile.Arn
+        SecurityGroupIds:
+          - !Ref ServiceSecurityGroupId
+        MetadataOptions:
+          HttpTokens: required
+          HttpEndpoint: enabled
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub ${ApplicationName}-${EnvironmentName}-bastion
+      MinSize: 0
+      MaxSize: 1
+      DesiredCapacity: 0
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      VPCZoneIdentifier:
+        - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-a-public-id}}'
+        - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-b-public-id}}'
+        - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-c-public-id}}'

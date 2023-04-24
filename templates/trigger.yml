@@ -44,7 +44,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-api-request-queue-processor
-      CodeUri: ../artifacts/dist.zip
+      CodeUri: ../artifacts/backend.zip
       Handler: trigger.triggerHandler
       Runtime: nodejs16.x
       Timeout: 60
@@ -75,7 +75,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-trigger-map-render
-      CodeUri: ../artifacts/dist.zip
+      CodeUri: ../artifacts/backend.zip
       Handler: render.renderHandler
       Runtime: nodejs16.x
       Timeout: 60

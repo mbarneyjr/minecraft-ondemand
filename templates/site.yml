@@ -13,6 +13,9 @@ Parameters:
     Type: String
   DomainName:
     Type: String
+  CertificateArn:
+    Type: String
+    Description: The ARN of the ACM certificate
 
 
 Resources:
@@ -26,17 +29,6 @@ Resources:
         Rules:
           - ObjectOwnership: BucketOwnerPreferred
 
-  SslCertificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Ref DomainName
-      SubjectAlternativeNames:
-        - !Sub '*.${DomainName}'
-      ValidationMethod: DNS
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
-
   SiteDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -47,7 +39,7 @@ Resources:
         Aliases:
           - !Ref DomainName
         ViewerCertificate:
-          AcmCertificateArn: !Ref SslCertificate
+          AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2019
         DefaultRootObject: index.html

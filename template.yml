@@ -55,6 +55,14 @@ Conditions:
 
 
 Resources:
+  Cert:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/cert.yml
+      Parameters:
+        HostedZoneName: !Ref HostedZoneName
+        DomainName: !Ref DomainName
+
   Map:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -64,6 +72,7 @@ Resources:
         EnvironmentName: !Ref EnvironmentName
         HostedZoneName: !Ref HostedZoneName
         DomainName: !Sub map.${DomainName}
+        CertificateArn: !GetAtt Cert.Outputs.CertificateArn
       Tags:
         - Key: workload
           Value: !Sub ${ApplicationName}-${EnvironmentName}
@@ -79,6 +88,7 @@ Resources:
         EnvironmentName: !Ref EnvironmentName
         HostedZoneName: !Ref HostedZoneName
         DomainName: !Ref DomainName
+        CertificateArn: !GetAtt Cert.Outputs.CertificateArn
       Tags:
         - Key: workload
           Value: !Sub ${ApplicationName}-${EnvironmentName}
@@ -109,7 +119,7 @@ Resources:
         - Key: workload
           Value: !Sub ${ApplicationName}-${EnvironmentName}
         - Key: component
-          Value: site
+          Value: service
 
   Trigger:
     Type: AWS::CloudFormation::Stack
@@ -189,9 +199,3 @@ Resources:
           Value: !Sub ${ApplicationName}-${EnvironmentName}
         - Key: component
           Value: bastion
-
-
-Outputs:
-  SiteBucketName:
-    Description: The name of the S3 bucket hosting the site
-    Value: !GetAtt Site.Outputs.SiteBucketName

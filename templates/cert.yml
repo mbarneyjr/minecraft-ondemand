@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+Parameters:
+  HostedZoneName:
+    Type: String
+    Description: The name of the hosted zone where DNS should be placed
+  DomainName:
+    Type: String
+    Description: The domain name the application will be behind
+
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub '*.${DomainName}'
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
+
+
+Outputs:
+  CertificateArn:
+    Description: The ARN of the ACM certificate
+    Value: !Ref Certificate
+

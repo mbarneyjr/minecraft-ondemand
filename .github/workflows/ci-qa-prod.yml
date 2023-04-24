@@ -9,7 +9,7 @@ env:
   APPLICATION_NAME: minecraft
   ARTIFACT_BUCKET: ci-artifacts-${{ secrets.DEVOPS_ACCOUNT_ID }}-us-east-1
   ARTIFACT_PREFIX: minecraft
-  CHANGE_SET_NAME: release-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}
+  CHANGE_SET_NAME: release-${{ github.run_number }}-${{ github.run_attempt }}
   CHANGE_SET_DESCRIPTION: ${{ github.event.head_commit.message }}
   VPC_NAME: mbarney
   MEMORY: 16384
@@ -18,7 +18,7 @@ env:
   OVERVIEWER_IMAGE_URI: ${{ secrets.DEVOPS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/minecraft-overviewer-renderer:0.0.3
   MINECRAFT_VERSION: '1.19.1'
   MINECRAFT_SEED: '-7390720122552741106'
-  MINECRAFT_OPS: Lexicham,Lexicam
+  MINECRAFT_OPS: Lexicham\,Lexicam
 
 permissions:
   id-token: write

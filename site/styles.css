@@ -1,0 +1,77 @@
+/* reset styles */
+.h1-reset {
+  margin: unset;
+}
+.p-reset {
+  margin: unset;
+}
+.ul-reset {
+  margin: unset;
+  padding: unset;
+  list-style-type: none;
+}
+.a-reset {
+  margin: unset;
+  padding: unset;
+  display: inline-block; 
+  text-decoration: none;
+  color: unset;
+}
+.button-reset {
+  padding: unset;
+  border: unset;
+  background: unset;
+  font: unset;
+  cursor: pointer;
+}
+
+/* misc styles */
+.underline {
+  text-decoration: underline;
+}
+
+/* content styles */
+.nav {
+  background-color: rgb(255 255 255 / 33%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.nav-dark {
+  background-color: rgb(0 0 0 / 33%);
+  color: #ccc;
+}
+.card {
+  background-color: rgb(255 255 255 / 33%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 1em;
+}
+.card-blue {
+  background-color: rgb(0 0 255 / 50%);
+}
+.card-dark {
+  background-color: rgb(0 0 0 / 33%);
+  color: #ccc;
+}
+.btn {
+  padding: 1em;
+  border-radius: 1em;
+  box-shadow: 0px 2px 2px 0px rgb(0 0 0 / 33%);
+  text-align: center;
+}
+.btn:active {
+  box-shadow: none;
+  transform: translateY(2px);
+}
+.footer {
+  background-color: rgb(255 255 255 / 33%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.footer-dark {
+  background-color: rgb(0 0 0 / 33%);
+  color: #ccc;
+}
+.footer-text {
+  text-align: center;
+}

@@ -1,4 +1,5 @@
 name: release-qa-prod
+concurrency: deploy_main
 
 on:
   push:

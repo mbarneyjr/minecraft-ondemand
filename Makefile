@@ -12,7 +12,6 @@ backend/node_modules: backend/package-lock.json
 artifacts/backend.zip: $(shell find ./backend -name '*.js') node_modules backend/node_modules
 	./scripts/build-artifact.sh backend
 
-
 artifacts/template.packaged.yml: template.yml $(shell find ./templates -name '*.yml') artifacts/backend.zip
 	./scripts/package.sh
 	touch artifacts/template.packaged.yml

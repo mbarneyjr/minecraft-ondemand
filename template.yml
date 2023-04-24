@@ -87,7 +87,7 @@ Resources:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
         HostedZoneName: !Ref HostedZoneName
-        DomainName: !Ref DomainName
+        DomainName: !Sub site.${DomainName}
         CertificateArn: !GetAtt Cert.Outputs.CertificateArn
       Tags:
         - Key: workload

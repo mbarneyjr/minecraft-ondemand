@@ -1,4 +1,5 @@
 name: release-dev
+concurrency: deploy_dev
 
 on:
   push:

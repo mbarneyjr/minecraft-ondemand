@@ -13,6 +13,7 @@ export function element({ html, state }) {
     <nav-bar breakpoint="512px">
       <a href="/" slot="title">mc.mbarney.me</a>
       <a class="link ${currentPath === '/' ? 'active' : ''}" href="/">Go Home</a>
+      <a class="link ${currentPath === '/admin' ? 'active' : ''}" href="/admin">Admin</a>
       ${authLink}
     </nav-bar>
   `;

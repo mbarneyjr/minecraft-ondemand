@@ -96,7 +96,6 @@ jobs:
         if: ${{ steps.create_change_set.outputs.no_changes != 'true' }}
         run: |
           make deploy-change-set
-          make deploy-site
   deploy_prod:
     needs: deploy_qa
     runs-on: ubuntu-latest
@@ -135,4 +134,3 @@ jobs:
         if: ${{ steps.create_change_set.outputs.no_changes != 'true' }}
         run: |
           make deploy-change-set
-          make deploy-site

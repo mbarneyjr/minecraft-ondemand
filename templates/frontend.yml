@@ -1,0 +1,212 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The application name that is being deployed
+  EnvironmentName:
+    Type: String
+    Description: The environment in which the stack will be deployed
+  HostedZoneName:
+    Type: String
+    Description: The name of the hosted zone where DNS should be placed
+  DomainName:
+    Type: String
+    Description: The domain name the application will be behind
+  CertificateArn:
+    Type: String
+    Description: The ARN of the ACM certificate
+  AuthAppClientId:
+    Type: String
+    Description: The ID of the Cognito User Pool App Client to use to authenticate with
+  AuthBaseUrl:
+    Type: String
+    Description: The base URL of the Cognito user pool
+
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    MemorySize: 1024
+    Timeout: 15
+    Tracing: PassThrough
+    CodeUri: ../artifacts/frontend.zip
+    Environment:
+      Variables:
+        APPLICATION_NAME: !Ref ApplicationName
+        ENVIRONMENT_NAME: !Ref EnvironmentName
+        APP_ENDPOINT: !Sub https://${DomainName}
+        APP_CLIENT_ID: !Ref AuthAppClientId
+        AUTH_BASE_URL: !Ref AuthBaseUrl
+        SESSION_KEY: !Sub '{{resolve:secretsmanager:${SessionKey}}}'
+
+
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+
+  SessionKey:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/session-key
+      GenerateSecretString:
+        ExcludePunctuation: true
+        IncludeSpace: false
+        PasswordLength: 32
+
+  FrontendProxy:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-frontend-proxy
+      Handler: index.handler
+      Role: !GetAtt LambdaRole.Arn
+  FrontendProxyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FrontendProxy}
+
+  ApiServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      Policies:
+        - PolicyName: !Sub API_Service_Role_Policy_${EnvironmentName}-${AWS::Region}
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: lambda:InvokeFunction
+                Effect: Allow
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+
+  ApiGatewayDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Sub ${DomainName}
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: !Ref CertificateArn
+          CertificateName: !Sub ${ApplicationName}-${EnvironmentName}-cert
+
+  ApiGatewayMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref Api
+      DomainName: !Ref ApiGatewayDomainName
+      Stage: !Ref ApiApiGatewayDefaultStage
+
+  ApiDnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
+      Type: A
+      Name: !Sub ${DomainName}.
+      AliasTarget:
+        HostedZoneId: !GetAtt ApiGatewayDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt ApiGatewayDomainName.RegionalDomainName
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}-frontend
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '{"requestId":"$context.requestId","ip": "$context.identity.sourceIp","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","routeKey":"$context.routeKey","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength","errorResponseType":"$context.error.responseType","message":"$context.error.message","integrationErrorMessage":"$context.integrationErrorMessage","authorizerError":"$context.authorizer.error"}'
+      DefinitionBody:
+        openapi: '3.0.1'
+        info:
+          title: !Sub ${ApplicationName}-${EnvironmentName}-frontend
+          description: Serverless API
+        paths:
+          /:
+            parameters:
+              - in: path
+                name: 'proxy+'
+                description: The frontend path
+                schema: { type: string }
+                required: true
+            x-amazon-apigateway-any-method:
+              operationId: proxyRequest
+              summary: Call the frontend proxy
+              description: Call the frontend proxy
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FrontendProxy.Arn}/invocations
+              responses:
+                '200': { $ref: '#/components/responses/frontendProxyResult' }
+          /{proxy+}:
+            parameters:
+              - in: path
+                name: 'proxy+'
+                description: The frontend path
+                schema: { type: string }
+                required: true
+            x-amazon-apigateway-any-method:
+              operationId: proxyRequest
+              summary: Call the frontend proxy
+              description: Call the frontend proxy
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FrontendProxy.Arn}/invocations
+              responses:
+                '200': { $ref: '#/components/responses/frontendProxyResult' }
+        components:
+          requestBodies: {}
+          responses:
+            frontendProxyResult:
+              description: GET /{proxy+} response
+              content:
+                text/html:
+                  schema:
+                    $ref: '#/components/schemas/htmlContent'
+          schemas:
+            htmlContent:
+              type: string
+
+  SsmAppEndpoint:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Application endpoint URL for frontend
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/frontend/app-endpoint
+      Value: !Sub https://${DomainName}
+
+
+Outputs:
+  AppEndpoint:
+    Description: Application endpoint URL for frontend
+    Value: !GetAtt SsmAppEndpoint.Value
+

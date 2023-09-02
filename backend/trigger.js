@@ -1,11 +1,17 @@
+/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 const AWS = require('aws-sdk');
 
 const ecs = new AWS.ECS();
 
-const ecsCluster = process.env.ECS_CLUSTER
-const ecsService = process.env.ECS_SERVICE
+const ecsCluster = process.env.ECS_CLUSTER;
+const ecsService = process.env.ECS_SERVICE;
 
-exports.triggerHandler = async (event, context) => {
+/**
+  * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+  * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
+  */
+exports.triggerHandler = async (event) => {
   console.log(`Event: ${JSON.stringify(event)}`);
 
   if (!ecsCluster || !ecsService) throw new Error('ECS_CLUSTER or ECS_SERVICE are not set');

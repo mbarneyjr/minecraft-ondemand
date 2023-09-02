@@ -63,6 +63,28 @@ Resources:
         HostedZoneName: !Ref HostedZoneName
         DomainName: !Ref DomainName
 
+  Auth:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/auth.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        DomainName: !Ref DomainName
+
+  Frontend:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/frontend.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        HostedZoneName: !Ref HostedZoneName
+        CertificateArn: !GetAtt Cert.Outputs.CertificateArn
+        DomainName: !Ref DomainName
+        AuthAppClientId: !GetAtt Auth.Outputs.AppClientId
+        AuthBaseUrl: !GetAtt Auth.Outputs.AuthBaseUrl
+
   Map:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -78,22 +100,6 @@ Resources:
           Value: !Sub ${ApplicationName}-${EnvironmentName}
         - Key: component
           Value: map
-
-  Site:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./templates/site.yml
-      Parameters:
-        ApplicationName: !Ref ApplicationName
-        EnvironmentName: !Ref EnvironmentName
-        HostedZoneName: !Ref HostedZoneName
-        DomainName: !Sub site.${DomainName}
-        CertificateArn: !GetAtt Cert.Outputs.CertificateArn
-      Tags:
-        - Key: workload
-          Value: !Sub ${ApplicationName}-${EnvironmentName}
-        - Key: component
-          Value: site
 
   Service:
     Type: AWS::CloudFormation::Stack

@@ -25,7 +25,7 @@ env:
   MINECRAFT_VERSION: '1.19.1'
   MINECRAFT_SEED: '-7390720122552741106'
   MINECRAFT_OPS: Lexicham\,Lexicam
-  MINECRAFT_MOTD: 'dev.mc.mbarney.me'
+  MINECRAFT_MOTD: '\u00a7bWelcome to the\u00a7e Salty Spatoon\u00a7r\n\u00a7oHow tough are ya?'
 
 permissions:
   id-token: write
@@ -95,4 +95,3 @@ jobs:
         if: ${{ steps.create_change_set.outputs.no_changes != 'true' }}
         run: |
           make deploy-change-set
-          make deploy-site

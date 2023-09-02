@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 const AWS = require('aws-sdk');
 
 const ecs = new AWS.ECS();
@@ -7,7 +9,11 @@ const cluster = process.env.ECS_CLUSTER;
 const subnets = process.env.SUBNETS?.split(',');
 const securityGroups = process.env.SECURITY_GROUPS?.split(',');
 
-exports.renderHandler = async (event, context) => {
+/**
+  * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+  * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
+  */
+exports.renderHandler = async (event) => {
   console.log(`Event: ${JSON.stringify(event)}`);
 
   if (!taskDefinition || !cluster || !subnets || !securityGroups) throw new Error('TASK_DEFINITION, ECS_CLUSTER, SUBNETS, or SECURITY_GROUPS not set');
@@ -16,7 +22,7 @@ exports.renderHandler = async (event, context) => {
     cluster,
     family: taskDefinition.split(':')[5],
     desiredStatus: 'RUNNING',
-  })}`)
+  })}`);
   const runningTasks = await ecs.listTasks({
     cluster,
     family: taskDefinition.split(':')[5].split('/')[1],
@@ -24,7 +30,7 @@ exports.renderHandler = async (event, context) => {
   }).promise();
   console.log(`Running tasks: ${JSON.stringify(runningTasks)}`);
 
-  if (runningTasks.taskArns.length > 0) {
+  if (runningTasks.taskArns && runningTasks.taskArns.length > 0) {
     console.log('Task already running');
   } else {
     console.log('Running task');

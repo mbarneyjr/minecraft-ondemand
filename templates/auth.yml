@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The application being deployed
+  EnvironmentName:
+    Type: String
+    Description: The environment being deployed
+  DomainName:
+    Type: String
+    Description: The domain name the application will be behind
+
+
+Conditions:
+  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
+
+
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub ${ApplicationName}-${EnvironmentName}
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 7
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub ${ApplicationName}-${EnvironmentName}-webapp
+      UserPoolId: !Ref CognitoUserPool
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - openid
+        - email
+      SupportedIdentityProviders:
+        - COGNITO
+      PreventUserExistenceErrors: ENABLED
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+      CallbackURLs:
+        - !Sub https://${DomainName}/oauth2/idresponse
+        - !If
+          - IsProd
+          - !Ref AWS::NoValue
+          - http://localhost:3000/oauth2/idresponse
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub ${ApplicationName}-${EnvironmentName}
+      UserPoolId: !Ref CognitoUserPool
+
+  SsmUserPoolId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito User Pool ID
+      Name:
+        Fn::Sub: /${ApplicationName}/${EnvironmentName}/auth/user-pool-id
+      Value:
+        Ref: CognitoUserPool
+
+  SsmUserPoolArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito User Pool ARN
+      Name:
+        Fn::Sub: /${ApplicationName}/${EnvironmentName}/auth/user-pool-arn
+      Value: !GetAtt CognitoUserPool.Arn
+
+  SsmAppClientId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito App Client ID
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/app-client-id
+      Value: !Ref UserPoolClient
+
+  SsmAuthBaseUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito App Client ID
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/auth-base-url
+      Value: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
+
+
+Outputs:
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPool
+  UserPoolArn:
+    Description: Cognito User Pool ARN
+    Value: !GetAtt CognitoUserPool.Arn
+  AppClientId:
+    Description: Cognito App Client ID
+    Value: !Ref UserPoolClient
+  AuthBaseUrl:
+    Description: The base URL of the Cognito user pool
+    Value: !GetAtt SsmAuthBaseUrl.Value
+

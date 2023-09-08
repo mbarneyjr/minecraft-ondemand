@@ -2,6 +2,7 @@ artifacts
 *.packaged.*
 *.local.*
 *.local
+*.env
 .vscode
 /images
 .idea

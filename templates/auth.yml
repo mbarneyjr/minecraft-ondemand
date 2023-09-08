@@ -29,6 +29,8 @@ Resources:
           RequireNumbers: true
           RequireUppercase: true
           TemporaryPasswordValidityDays: 7
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
       Schema:
         - Name: email
           AttributeDataType: String
@@ -40,6 +42,13 @@ Resources:
         - email
       EmailConfiguration:
         EmailSendingAccount: COGNITO_DEFAULT
+
+  AdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: admins
+      UserPoolId: !Ref CognitoUserPool
+      Description: Admin users
 
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient

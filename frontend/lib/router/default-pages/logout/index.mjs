@@ -1,4 +1,4 @@
-/** @type {import('../../../../lib/router/index.js').RenderFunction} */
+/** @type {import('../../../../lib/router/index.mjs').RenderFunction} */
 export default async function render(_, session) {
   return {
     headers: {

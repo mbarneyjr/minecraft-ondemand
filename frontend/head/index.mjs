@@ -1,6 +1,10 @@
 /* eslint-disable-next-line no-unused-vars */
-/** @type {import('./index.js').Head} */
-export default function Head(_, state) {
+/**
+ * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @param {import('../lib/router/index.types.mjs').StateBase | undefined} state
+ * @returns {string}
+ */
+export default function Head(event, state) {
   const title = state?.head?.title
     ? `${state.head.title} - mc.mbarney.me`
     : 'mc.mbarney.me';

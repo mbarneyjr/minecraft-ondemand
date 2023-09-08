@@ -37,7 +37,7 @@ dependencies: node_modules backend/node_modules
 
 lint: node_modules frontend/node_modules backend/node_modules
 	./node_modules/.bin/tsc -p ./tsconfig.json
-	./node_modules/.bin/eslint . --max-warnings=0 --ext .mjs,.js,.ts
+	./node_modules/.bin/eslint . --max-warnings=0 --ext .mjs,.js,.ts,.mts,.d.mts,.d.ts
 	cfn-lint
 
 package: artifacts/template.packaged.yml

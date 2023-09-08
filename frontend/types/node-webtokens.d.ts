@@ -5,6 +5,7 @@ declare module 'node-webtokens' {
     aud: string
     exp: number
     value: string
+    'cognito:groups'?: Array<string>
   }
   type ParsedWebtoken = {
     parts: string[]

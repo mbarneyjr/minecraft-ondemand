@@ -1,12 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import authMiddleware from '../../lib/middleware/auth/index.mjs';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** @type {import('../../lib/router/index.mjs').RenderFunction} */
-const adminPortalHandler = async (event, session) => {
+/** @type {import('../../../../lib/router/index.mjs').RenderFunction} */
+export default async function render(_, session) {
   return {
     body: readFileSync(`${dirname}/index.html`).toString(),
     headers: {
@@ -14,12 +13,11 @@ const adminPortalHandler = async (event, session) => {
     },
     state: {
       head: {
-        title: 'Admin',
-        description: 'Administrator portal',
+        title: 'Unauthorized',
+        description: 'Unauthorized',
       },
     },
     session,
+    statusCode: 403,
   };
-};
-
-export default authMiddleware(adminPortalHandler, { adminOnly: true });
+}

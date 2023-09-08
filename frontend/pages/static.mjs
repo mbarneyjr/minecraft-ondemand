@@ -5,7 +5,7 @@ import { mimeTypes } from '../lib/mime-types/index.mjs';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** @type {import('../lib/router/index.js').RenderFunction} */
+/** @type {import('../lib/router/index.mjs').RenderFunction} */
 export default async function render(event, session) {
   const assetPath = event.rawPath.split('/static/')[1];
   try {
@@ -13,7 +13,7 @@ export default async function render(event, session) {
     const extension = path.extname(assetPath).substring(1);
     return {
       body: fileData,
-      isBase64Decoded: true,
+      isBase64Encoded: true,
       headers: {
         'content-type': mimeTypes[extension] ?? 'application/octet-stream',
       },

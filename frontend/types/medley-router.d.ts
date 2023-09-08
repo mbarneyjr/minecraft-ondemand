@@ -1,5 +1,5 @@
 declare module '@medley/router' {
-  import { RenderFunction } from '../lib/router/index.d.ts';
+  import { RenderFunction } from '../lib/router/index.mjs';
 
   export type RouteStore = Record<string, RenderFunction>
 

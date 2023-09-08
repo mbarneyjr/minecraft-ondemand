@@ -3,8 +3,26 @@ import fetch from 'node-fetch';
 import { config } from '../config/index.mjs';
 import { logger } from '../logger/index.mjs';
 
-/** @type {import('./index.js').getTokens} */
-export async function getTokens(_, authCode) {
+/**
+ * @typedef {object} TokenCodeResponse
+ * @property {string} access_token
+ * @property {string} id_token
+ * @property {string} refresh_token
+ * @property {string} token_type
+ * @property {number} expires_in
+ * @property {string} [error]
+ */
+
+/**
+ * @typedef {Omit<TokenCodeResponse, 'refresh_token'>} RefreshedTokenCodeResponse
+ */
+
+/**
+ * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @param {string} authCode
+ * @returns {Promise<TokenCodeResponse>}
+ */
+export async function getTokens(event, authCode) {
   const tokenParams = {
     client_id: config.auth.clientId,
     scope: config.auth.scope,
@@ -20,14 +38,17 @@ export async function getTokens(_, authCode) {
     },
     body: new URLSearchParams(tokenParams),
   });
-  const body = /** @type {import('./index.js').TokenCodeResponse} */ (await response.json());
+  const body = /** @type {import('./index.mjs').TokenCodeResponse} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
     throw new Error(`failed to fetch tokens: ${body.error}`);
   }
   return body;
 }
 
-/** @type {import('./index.js').refreshTokens} */
+/**
+ * @param {string} refreshToken
+ * @returns {Promise<RefreshedTokenCodeResponse>}
+ */
 export async function refreshTokens(refreshToken) {
   const refreshTokenParams = {
     grant_type: 'refresh_token',
@@ -43,7 +64,7 @@ export async function refreshTokens(refreshToken) {
     },
     body: new URLSearchParams(refreshTokenParams),
   });
-  const body = /** @type {import('./index.js').RefreshedTokenCodeResponse} */ (await response.json());
+  const body = /** @type {import('./index.mjs').RefreshedTokenCodeResponse} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
     throw new Error(`failed to fetch tokens, ${body.error}`);
   }

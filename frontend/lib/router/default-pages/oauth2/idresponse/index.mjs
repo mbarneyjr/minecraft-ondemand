@@ -1,6 +1,6 @@
 import { getTokens } from '../../../../auth/index.mjs';
 
-/** @type {import('../../../../../lib/router/index.js').RenderFunction} */
+/** @type {import('../../../../../lib/router/index.mjs').RenderFunction} */
 export default async function render(event, session) {
   const authCode = event.queryStringParameters?.code;
   if (!authCode) {

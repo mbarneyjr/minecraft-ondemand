@@ -2,7 +2,7 @@ import { encode } from 'querystring';
 import { config } from '../../../config/index.mjs';
 import { isLoggedIn, sessionNeedsRefresh } from '../../../middleware/auth/index.mjs';
 
-/** @type {import('../../../../lib/router/index.js').RenderFunction} */
+/** @type {import('../../../../lib/router/index.mjs').RenderFunction} */
 export default async function render(event, session) {
   if (isLoggedIn(session) && !sessionNeedsRefresh(session)) {
     return {

@@ -2,7 +2,10 @@ import { encode } from 'querystring';
 import jwt from 'node-webtokens';
 import { refreshTokens } from '../../auth/index.mjs';
 
-/** @type {import('./index.js').isLoggedIn} */
+/**
+ * @param {import('../../session/index.mjs').Session} session
+ * @returns {session is import('./types.mjs').LoggedInSession}
+ */
 export function isLoggedIn(session) {
   if (!session.idToken || !session.accessToken || !session.refreshToken) {
     return false;
@@ -10,7 +13,27 @@ export function isLoggedIn(session) {
   return true;
 }
 
-/** @type {import('./index.js').sessionNeedsRefresh} */
+/**
+ * @param {import('./types.mjs').LoggedInSession} session
+ * @param {string} group
+ * @returns {boolean}
+ */
+function sessionIsMember(session, group) {
+  if (session.idToken) {
+    const parsed = jwt.parse(session.idToken);
+    if (!parsed.payload) {
+      return false;
+    }
+    const groups = parsed.payload['cognito:groups'] ?? [];
+    return groups.includes(group);
+  }
+  return false;
+}
+
+/**
+ * @param {import('./types.mjs').LoggedInSession} session
+ * @returns {boolean}
+ */
 export function sessionNeedsRefresh(session) {
   const parsed = jwt.parse(session.idToken);
   if (!parsed.payload) {
@@ -24,7 +47,10 @@ export function sessionNeedsRefresh(session) {
   return false;
 }
 
-/** @type {import('./index.js').refreshSession} */
+/**
+ * @param {import('./types.mjs').LoggedInSession} session
+ * @returns {Promise<import('./types.mjs').LoggedInSession>}
+ */
 async function refreshSession(session) {
   const newSession = structuredClone(session);
   const tokenResponse = await refreshTokens(newSession.refreshToken);
@@ -36,7 +62,11 @@ async function refreshSession(session) {
   return newSession;
 }
 
-/** @type {import('./index.js').redirectToLogin} */
+/**
+ * @param {import('../../session/index.mjs').Session} session
+ * @param {string} requestedPath
+ * @returns {import('../../router/index.mjs').RenderResult}
+ */
 function redirectToLogin(session, requestedPath) {
   return {
     headers: {
@@ -47,20 +77,28 @@ function redirectToLogin(session, requestedPath) {
   };
 }
 
-/** @type {import('./index.js').AuthMiddleWare} */
-export default function authMiddleware(originalRenderer) {
-  /** @type {import('../../router/index.js').RenderFunction} */
+/**
+ * @param {import('../../router/index.mjs').RenderFunction} originalRenderer
+ * @param {object} [options]
+ * @param {boolean} [options.adminOnly]
+ * @returns {import('../../router/index.mjs').RenderFunction}
+ */
+export default function authMiddleware(originalRenderer, options) {
+  /** @type {import('../../router/index.mjs').RenderFunction} */
   return async (event, session) => {
     const newSession = structuredClone(session);
     if (!isLoggedIn(newSession)) {
       return redirectToLogin(newSession, event.rawPath);
     }
-    if (!sessionNeedsRefresh(newSession)) {
-      return originalRenderer(event, newSession);
-    }
+    const loggedInSession = sessionNeedsRefresh(newSession) ? await refreshSession(newSession) : newSession;
     try {
-      const refreshedSession = await refreshSession(newSession);
-      return originalRenderer(event, refreshedSession);
+      if (options?.adminOnly && !sessionIsMember(loggedInSession, 'admins')) {
+        return {
+          statusCode: 403,
+          session: newSession,
+        };
+      }
+      return originalRenderer(event, loggedInSession);
     } catch (err) {
       return redirectToLogin({
         ...newSession,

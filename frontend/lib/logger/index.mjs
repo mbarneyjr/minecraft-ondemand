@@ -1,28 +1,46 @@
-/** @type {import('./index.js').getLogLevel} */
+/**
+ * @typedef {'debug' | 'info' | 'warn' | 'error'} LogLevel
+ * @callback LoggerFunction
+ * @param {string} message
+ * @param {import('./types.mjs').LogData} [data]
+ * @param {import('./types.mjs').RequestContext} [requestContext]
+ * @returns {import('./types.mjs').Log}
+ */
+
+/**
+ * @param {string | undefined} input
+ * @returns {number}
+ */
 function getLogLevel(input) {
-  /** @type {Record<import('./index.js').LogLevel, number>} */
+  /** @type {Record<LogLevel, number>} */
   const logLevelMap = {
     debug: 10,
     info: 20,
     warn: 30,
     error: 40,
   };
-  if (input !== undefined && input in logLevelMap) return logLevelMap[/** @type {import('./index.js').LogLevel} */ (input)];
+  if (input !== undefined && input in logLevelMap) return logLevelMap[/** @type {LogLevel} */ (input)];
   return logLevelMap.debug;
 }
 
-/** @type {import('./index.js').RequestContext} */
+/** @type {import('./types.mjs').RequestContext} */
 const globalRequestContext = {
   method: null,
   path: null,
 };
 
-/** @type {import('./index.js').log} */
+/**
+ * @param {LogLevel} level
+ * @param {string} message
+ * @param {import('./types.mjs').LogData} [data]
+ * @param {import('./types.mjs').RequestContext} [requestContext]
+ * @returns {import('./types.mjs').Log}
+ */
 export function log(level, message, data, requestContext) {
   if (requestContext?.method) globalRequestContext.method = requestContext.method;
   if (requestContext?.path) globalRequestContext.path = requestContext.path;
 
-  /** @type {import('./index.js').Log} */
+  /** @type {import('./types.mjs').Log} */
   const logLine = {
     message,
     data,
@@ -36,7 +54,7 @@ export function log(level, message, data, requestContext) {
   return logLine;
 }
 
-/** @type {Record<import('./index.js').LogLevel, import('./index.js').LoggerFunction>} */
+/** @type {Record<LogLevel, LoggerFunction>} */
 export const logger = {
   debug: (message, data, requestContext) => log('debug', message, data, requestContext),
   info: (message, data, requestContext) => log('info', message, data, requestContext),
@@ -44,5 +62,8 @@ export const logger = {
   error: (message, data, requestContext) => log('error', message, data, requestContext),
 };
 
-/** @type {import('./index.js').errorJson} */
+/**
+ * @param {unknown} err
+ * @returns {Record<string, unknown>}
+ */
 export const errorJson = (err) => JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err)));

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import enhance from '@enhance/ssr';
 
 import { logger } from './lib/logger/index.mjs';
@@ -7,8 +8,12 @@ import { parseSession, writeSession } from './lib/session/index.mjs';
 import head from './head/index.mjs';
 import elements from './elements/index.mjs';
 
-/** @type {import('./index.js').handler} */
-export async function handler(event) {
+/**
+ * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @param {import('aws-lambda').Context} context
+ * @returns {Promise<import('aws-lambda').APIGatewayProxyStructuredResultV2>}
+ */
+export async function handler(event, context) {
   logger.info('event', {}, {
     method: event.requestContext.http.method,
     path: event.requestContext.http.path,
@@ -40,9 +45,9 @@ export async function handler(event) {
   /** @type {import('aws-lambda').APIGatewayProxyResultV2} */
   const result = {
     statusCode: renderResult.statusCode ?? 200,
-    isBase64Encoded: renderResult.isBase64Decoded ?? false,
+    isBase64Encoded: renderResult.isBase64Encoded ?? false,
     headers: renderResult.headers ?? {},
-    body: renderResult.isBase64Decoded ? renderResult.body : bodyHtml,
+    body: renderResult.isBase64Encoded ? renderResult.body : bodyHtml,
     cookies: newSession,
   };
   return result;

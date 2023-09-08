@@ -56,7 +56,7 @@ module.exports = {
   settings: {
     'import/resolver': {
       node: {
-        extensions: ['.js', '.mjs', '.ts', '.d.ts'],
+        extensions: ['.js', '.mjs', '.ts', '.d.ts', '.mts', '.d.mts'],
         moduleDirectory: [
           'node_modules',
           'frontend',

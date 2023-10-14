@@ -5,18 +5,17 @@
  * @returns {string}
  */
 export default function Head(event, state) {
-  const title = state?.head?.title
-    ? `${state.head.title} - mc.mbarney.me`
-    : 'mc.mbarney.me';
+  const title = state?.head?.title ? `${state.head.title} - mc.mbarney.me` : 'mc.mbarney.me';
   const description = state?.head?.description ?? '';
-  const devHtml = process.env.LOCAL === 'true'
-    ? /* html */ `
+  const devHtml =
+    process.env.LOCAL === 'true'
+      ? /* html */ `
       <script>
         document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
       </script>`
-    : '';
+      : '';
 
-  return /* html */`
+  return /* html */ `
     <!DOCTYPE html>
     <html lang="en">
     <head>

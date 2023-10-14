@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Minecraft Monitoring
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -36,7 +35,6 @@ Parameters:
   MapRenderRule:
     Type: String
     Description: The name of the EventBridge rule that triggers map renders
-
 
 Resources:
   AlarmTopic:

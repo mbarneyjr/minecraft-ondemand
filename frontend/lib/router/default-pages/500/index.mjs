@@ -14,7 +14,7 @@ export default async function render(_, session) {
     state: {
       head: {
         title: 'Not Found',
-        description: 'App\'s 500 page',
+        description: "App's 500 page",
       },
     },
     session,

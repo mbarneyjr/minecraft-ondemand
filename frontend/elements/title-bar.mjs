@@ -5,7 +5,8 @@ export const ELEMENT_NAME = 'title-bar';
  */
 export function element({ html, state }) {
   const currentPath = state.store?.path;
-  const isAuthenticated = state.store?.session?.idToken && state.store?.session?.accessToken && state.store?.session?.refreshToken;
+  const isAuthenticated =
+    state.store?.session?.idToken && state.store?.session?.accessToken && state.store?.session?.refreshToken;
   const authLink = isAuthenticated
     ? /* html */ `<a class="link" href="/logout">Log Out</a>`
     : /* html */ `<a class="link" href="/login">Log In</a>`;

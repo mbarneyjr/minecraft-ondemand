@@ -83,15 +83,15 @@ A bastion template is included to serve as a bastion to access the EFS volume. I
 The launched instances will be configured with everything required to use AWS SSM Session Manager. Additionally, you can use SSM with SSH to create an SSH tunnel to connect to the EFS volume on your local machine. The following explains how you can do that.
 
 1. First configure your SSH config with the following section. This section will upload your ssh key to the bastion before it attempts to use SSM to connect to the host.
-    ```ini
-    host qqi-*
-      ProxyCommand sh -c 'host=%h; host=${host/*qq/}; aws ec2-instance-connect send-ssh-public-key --instance-id $host --availability-zone $(aws ec2 describe-instances --instance-id $host --output text --query Reservations[].Instances[].Placement.AvailabilityZone) --instance-os-user ec2-user --ssh-public-key file://<YOUR_PUBLIC_SSH_KEY_FILE_HERE> && aws ssm start-session --target $host --document-name AWS-StartSSHSession --parameters "portNumber=%p"'
-    ```
+   ```ini
+   host qqi-*
+     ProxyCommand sh -c 'host=%h; host=${host/*qq/}; aws ec2-instance-connect send-ssh-public-key --instance-id $host --availability-zone $(aws ec2 describe-instances --instance-id $host --output text --query Reservations[].Instances[].Placement.AvailabilityZone) --instance-os-user ec2-user --ssh-public-key file://<YOUR_PUBLIC_SSH_KEY_FILE_HERE> && aws ssm start-session --target $host --document-name AWS-StartSSHSession --parameters "portNumber=%p"'
+   ```
 1. Then create an SSH tunnel with the bastion:
-    ```sh
-    $ ssh ec2-user@qq<BASTION_INSTANCE_ID> -L 2049:<EFS_FILESYSTEM_ID>.efs.<REGION>.amazonaws.com:2049
-    ```
+   ```sh
+   $ ssh ec2-user@qq<BASTION_INSTANCE_ID> -L 2049:<EFS_FILESYSTEM_ID>.efs.<REGION>.amazonaws.com:2049
+   ```
 1. Mount your volume locally:
-    ```sh
-    $ sudo mount -t nfs -o nfsvers=4.0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport localhost:/ <TARGET_MOUNT_PATH>
-    ```
+   ```sh
+   $ sudo mount -t nfs -o nfsvers=4.0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport localhost:/ <TARGET_MOUNT_PATH>
+   ```

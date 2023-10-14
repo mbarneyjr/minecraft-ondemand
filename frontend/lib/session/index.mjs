@@ -37,11 +37,13 @@ export async function parseSession(cookies) {
  * @returns {Promise<Array<string>>}
  */
 export async function writeSession(session) {
-  return Object.entries(session ?? {}).filter((entry) => entry[1] !== undefined).map(([key, value]) => {
-    const generated = jwt.generate(ALG, ENC, { value }, SESSION_KEY);
-    return cookie.serialize(key, generated, {
-      path: '/',
-      httpOnly: true,
+  return Object.entries(session ?? {})
+    .filter((entry) => entry[1] !== undefined)
+    .map(([key, value]) => {
+      const generated = jwt.generate(ALG, ENC, { value }, SESSION_KEY);
+      return cookie.serialize(key, generated, {
+        path: '/',
+        httpOnly: true,
+      });
     });
-  });
 }

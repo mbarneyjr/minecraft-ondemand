@@ -12,7 +12,9 @@ export default async function render(event, session) {
       statusCode: 302,
     };
   }
-  const state = event.queryStringParameters?.state ? JSON.parse(Buffer.from(event.queryStringParameters.state, 'base64').toString()) : undefined;
+  const state = event.queryStringParameters?.state
+    ? JSON.parse(Buffer.from(event.queryStringParameters.state, 'base64').toString())
+    : undefined;
   const tokenResponse = await getTokens(event, authCode);
   return {
     headers: {

@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Minecraft Ondemand
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -49,10 +48,8 @@ Parameters:
     Type: String
     Description: The Minecraft server message of the day
 
-
 Conditions:
-  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
-
+  IsProd: !Equals [!Ref EnvironmentName, 'prod']
 
 Resources:
   Cert:

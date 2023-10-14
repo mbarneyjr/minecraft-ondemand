@@ -39,7 +39,7 @@ export function sessionNeedsRefresh(session) {
   if (!parsed.payload) {
     return true;
   }
-  const secondsUntilExpiration = parsed.payload.exp - (new Date().getTime() / 1000);
+  const secondsUntilExpiration = parsed.payload.exp - new Date().getTime() / 1000;
   const FIVE_MINUTES = 60 * 5;
   if (secondsUntilExpiration < FIVE_MINUTES) {
     return true;
@@ -100,12 +100,15 @@ export default function authMiddleware(originalRenderer, options) {
       }
       return originalRenderer(event, loggedInSession);
     } catch (err) {
-      return redirectToLogin({
-        ...newSession,
-        idToken: null,
-        accessToken: null,
-        refreshToken: null,
-      }, event.rawPath);
+      return redirectToLogin(
+        {
+          ...newSession,
+          idToken: null,
+          accessToken: null,
+          refreshToken: null,
+        },
+        event.rawPath,
+      );
     }
   };
 }

@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-
 Parameters:
   HostedZoneName:
     Type: String
@@ -8,7 +7,6 @@ Parameters:
   DomainName:
     Type: String
     Description: The domain name the application will be behind
-
 
 Resources:
   Certificate:
@@ -22,9 +20,7 @@ Resources:
         - DomainName: !Ref DomainName
           HostedZoneId: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
 
-
 Outputs:
   CertificateArn:
     Description: The ARN of the ACM certificate
     Value: !Ref Certificate
-

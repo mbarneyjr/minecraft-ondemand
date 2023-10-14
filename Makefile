@@ -31,9 +31,12 @@ frontend/.env:
 	echo "APP_ENDPOINT=http://localhost:3000" >> frontend/.env
 	touch frontend/.env
 
-.PHONY: lint build test coverage debug package deploy delete diagrams-watch diagrams clean
+.PHONY: format lint build test coverage debug package deploy delete diagrams-watch diagrams clean
 dependencies: node_modules backend/node_modules
 	pip install -r requirements.txt
+
+format: node_modules frontend/node_modules backend/node_modules
+	./node_modules/.bin/prettier --write .
 
 lint: node_modules frontend/node_modules backend/node_modules
 	./node_modules/.bin/tsc -p ./tsconfig.json

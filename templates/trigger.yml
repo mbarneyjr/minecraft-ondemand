@@ -2,7 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Minecraft Ondemand Trigger
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -37,7 +36,6 @@ Parameters:
   ExecutionRoleArn:
     Type: String
     Description: The ARN of the service execution role
-
 
 Resources:
   Trigger:
@@ -109,7 +107,6 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${MapTrigger}
-
 
 Outputs:
   FunctionName:

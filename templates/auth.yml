@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -12,10 +11,8 @@ Parameters:
     Type: String
     Description: The domain name the application will be behind
 
-
 Conditions:
-  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
-
+  IsProd: !Equals [!Ref EnvironmentName, 'prod']
 
 Resources:
   CognitoUserPool:
@@ -118,7 +115,6 @@ Resources:
       Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/auth-base-url
       Value: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
 
-
 Outputs:
   UserPoolId:
     Description: Cognito User Pool ID
@@ -132,4 +128,3 @@ Outputs:
   AuthBaseUrl:
     Description: The base URL of the Cognito user pool
     Value: !GetAtt SsmAuthBaseUrl.Value
-

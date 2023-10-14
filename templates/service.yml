@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Minecraft Service
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -49,10 +48,8 @@ Parameters:
     Type: String
     Description: The ARN of the S3 bucket to use for the map
 
-
 Conditions:
-  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
-
+  IsProd: !Equals [!Ref EnvironmentName, 'prod']
 
 Resources:
   Topic:
@@ -468,7 +465,6 @@ Resources:
                   - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-a-public-id}}'
                   - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-b-public-id}}'
                   - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-c-public-id}}'
-
 
 Outputs:
   EcsCluster:

@@ -14,10 +14,14 @@ import elements from './elements/index.mjs';
  * @returns {Promise<import('aws-lambda').APIGatewayProxyStructuredResultV2>}
  */
 export async function handler(event, context) {
-  logger.info('event', {}, {
-    method: event.requestContext.http.method,
-    path: event.requestContext.http.path,
-  });
+  logger.info(
+    'event',
+    {},
+    {
+      method: event.requestContext.http.method,
+      path: event.requestContext.http.path,
+    },
+  );
 
   registerPages();
 

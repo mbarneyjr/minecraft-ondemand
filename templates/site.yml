@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Minecraft Site Hosting
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -16,7 +15,6 @@ Parameters:
   CertificateArn:
     Type: String
     Description: The ARN of the ACM certificate
-
 
 Resources:
   SiteBucket:
@@ -108,7 +106,6 @@ Resources:
         HostedZoneId: Z2FDTNDATAQYW2
       Name: !Ref DomainName
       HostedZoneName: !Sub ${HostedZoneName}.
-
 
 Outputs:
   SiteBucketName:

@@ -1,15 +1,15 @@
 export interface RequestContext {
-  method: string | null
-  path: string | null
+  method: string | null;
+  path: string | null;
 }
 
 export interface LogContext {
-  request: RequestContext
+  request: RequestContext;
 }
 
-export type LogData = Record<string, unknown>
+export type LogData = Record<string, unknown>;
 
 export interface Log extends LogContext {
-  message: string
-  data?: LogData
+  message: string;
+  data?: LogData;
 }

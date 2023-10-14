@@ -1,9 +1,7 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: [
-    '@typescript-eslint',
-  ],
+  plugins: ['@typescript-eslint'],
   env: {
     browser: true,
     commonjs: true,
@@ -25,16 +23,22 @@ module.exports = {
   },
   rules: {
     'max-len': ['error', 512],
-    'yoda': 'off',
+    yoda: 'off',
     'consistent-return': 'off',
     'prefer-destructuring': 'off',
     'comma-dangle': ['error', 'always-multiline'],
-    'semi': ['error', 'always'],
-    'indent': ['error', 2],
-    'quotes': ['error', 'single', {
-      avoidEscape: true,
-      allowTemplateLiterals: true,
-    }],
+    semi: ['error', 'always'],
+    indent: ['off'],
+    quotes: [
+      'error',
+      'single',
+      {
+        avoidEscape: true,
+        allowTemplateLiterals: true,
+      },
+    ],
+    'object-curly-newline': ['off'],
+    'operator-linebreak': ['off'],
     'quote-props': ['error', 'consistent-as-needed'],
     'arrow-body-style': 'off',
     'no-restricted-syntax': 'off',
@@ -42,13 +46,13 @@ module.exports = {
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'import/no-cycle': 'off',
-    'import/no-extraneous-dependencies': ['error', {
-      devDependencies: true,
-      packageDir: [
-        `${__dirname}`,
-        `${__dirname}/frontend`,
-      ],
-    }],
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: true,
+        packageDir: [`${__dirname}`, `${__dirname}/frontend`],
+      },
+    ],
     'import/no-relative-packages': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/no-var-requires': 'off',
@@ -57,24 +61,19 @@ module.exports = {
     'import/resolver': {
       node: {
         extensions: ['.js', '.mjs', '.ts', '.d.ts', '.mts', '.d.mts'],
-        moduleDirectory: [
-          'node_modules',
-          'frontend',
-        ],
+        moduleDirectory: ['node_modules', 'frontend'],
       },
     },
   },
-  ignorePatterns: [
-    'coverage',
-  ],
-  overrides: [{
-    files: [
-      'frontend/*.*js',
-    ],
-    rules: {
-      'no-alert': 'off',
-      'no-restricted-globals': 'off',
-      'implicit-arrow-linebreak': 'off',
+  ignorePatterns: ['coverage'],
+  overrides: [
+    {
+      files: ['frontend/*.*js'],
+      rules: {
+        'no-alert': 'off',
+        'no-restricted-globals': 'off',
+        'implicit-arrow-linebreak': 'off',
+      },
     },
-  }],
+  ],
 };

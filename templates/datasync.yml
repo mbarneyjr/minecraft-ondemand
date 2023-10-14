@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Minecraft DataSync Transfer
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -21,7 +20,6 @@ Parameters:
   ServiceSecurityGroupId:
     Type: String
     Description: The ID of the service's security group
-
 
 Resources:
   Bucket:

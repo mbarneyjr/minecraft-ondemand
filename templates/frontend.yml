@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -25,7 +24,6 @@ Parameters:
     Type: String
     Description: The base URL of the Cognito user pool
 
-
 Globals:
   Function:
     Runtime: nodejs18.x
@@ -41,7 +39,6 @@ Globals:
         APP_CLIENT_ID: !Ref AuthAppClientId
         AUTH_BASE_URL: !Ref AuthBaseUrl
         SESSION_KEY: !Sub '{{resolve:secretsmanager:${SessionKey}}}'
-
 
 Resources:
   LambdaRole:
@@ -204,9 +201,7 @@ Resources:
       Name: !Sub /${ApplicationName}/${EnvironmentName}/frontend/app-endpoint
       Value: !Sub https://${DomainName}
 
-
 Outputs:
   AppEndpoint:
     Description: Application endpoint URL for frontend
     Value: !GetAtt SsmAppEndpoint.Value
-

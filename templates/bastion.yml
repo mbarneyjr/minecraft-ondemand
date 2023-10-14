@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Minecraft Bastion
 
-
 Parameters:
   ApplicationName:
     Type: String
@@ -29,7 +28,6 @@ Parameters:
     Type: String
     Description: The type of Amazon EC2 Linux instances that will be launched for this project.
     Default: t3.micro
-
 
 Resources:
   InstanceRole:

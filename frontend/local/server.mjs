@@ -64,7 +64,9 @@ app.all('/*', async (req, res) => {
     version: '2.0',
     routeKey: 'GET /{proxy+}',
     rawPath: req.path,
-    cookies: req.headers.cookie ? Object.entries(cookie.parse(req.headers.cookie)).map((([key, value]) => `${key}=${value}`)) : [],
+    cookies: req.headers.cookie
+      ? Object.entries(cookie.parse(req.headers.cookie)).map(([key, value]) => `${key}=${value}`)
+      : [],
     headers: normalizedHeaders,
     body: JSON.stringify(req.body),
     rawQueryString: `${new URLSearchParams(normalizedQuerystringParameters)}`,
@@ -97,7 +99,11 @@ app.all('/*', async (req, res) => {
       ...lambdaResponse.headers,
       'set-cookie': lambdaResponse.cookies,
     })
-    .send(lambdaResponse.body && lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body);
+    .send(
+      lambdaResponse.body && lambdaResponse.isBase64Encoded
+        ? Buffer.from(lambdaResponse.body, 'base64')
+        : lambdaResponse.body,
+    );
 });
 
 app.listen(port, () => {

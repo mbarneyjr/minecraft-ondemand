@@ -17,7 +17,9 @@ export default async function render(event, session) {
   const loginParameters = {
     client_id: config.auth.clientId,
     scope: config.auth.scope,
-    redirect_uri: `${event.requestContext.domainName.includes('localhost') ? 'http' : 'https'}://${event.requestContext.domainName}/oauth2/idresponse`,
+    redirect_uri: `${event.requestContext.domainName.includes('localhost') ? 'http' : 'https'}://${
+      event.requestContext.domainName
+    }/oauth2/idresponse`,
     response_type: 'code',
     state: Buffer.from(JSON.stringify({ requestedPath })).toString('base64'),
   };

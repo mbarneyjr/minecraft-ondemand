@@ -42,7 +42,14 @@ export async function handler(event, context) {
       session,
     },
   });
-  const bodyHtml = renderResult.body ? html`${headHtml}${renderResult.body}` : undefined;
+
+  /** @type {string} */
+  let bodyHtml;
+  if (renderResult.headers?.['content-type'] === 'text/html') {
+    bodyHtml = renderResult.body ? html`${headHtml}${renderResult.body}` : undefined;
+  } else {
+    bodyHtml = renderResult.body ?? '';
+  }
 
   const newSession = await writeSession(renderResult.session);
 

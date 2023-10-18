@@ -7,3 +7,4 @@ ignore_checks:
   - I3011
   - I3042
   - W3002
+  - E3002

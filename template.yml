@@ -77,6 +77,9 @@ Resources:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
         HostedZoneName: !Ref HostedZoneName
+        VpcName: !Ref VpcName
+        ServiceSecurityGroupId: !GetAtt Service.Outputs.ServiceSecurityGroupId
+        FileSystemAccessPointArn: !GetAtt Service.Outputs.FileSystemAccessPointArn
         CertificateArn: !GetAtt Cert.Outputs.CertificateArn
         DomainName: !Ref DomainName
         AuthAppClientId: !GetAtt Auth.Outputs.AppClientId

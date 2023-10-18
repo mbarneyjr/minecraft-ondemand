@@ -11,6 +11,19 @@ Parameters:
   HostedZoneName:
     Type: String
     Description: The name of the hosted zone where DNS should be placed
+  VpcName:
+    Type: String
+    Description: The name of the VPC to use
+  ServiceSecurityGroupId:
+    Type: String
+    Description: The ID of the service's security group
+  FileSystemAccessPointArn:
+    Type: String
+    Description: The ARN of the EFS FileSystem access point
+  MinecraftMountDirectory:
+    Type: String
+    Description: The directory to mount the EFS FileSystem to
+    Default: /mnt/minecraft
   DomainName:
     Type: String
     Description: The domain name the application will be behind
@@ -39,6 +52,7 @@ Globals:
         APP_CLIENT_ID: !Ref AuthAppClientId
         AUTH_BASE_URL: !Ref AuthBaseUrl
         SESSION_KEY: !Sub '{{resolve:secretsmanager:${SessionKey}}}'
+        MINECRAFT_MOUNT_DIRECTORY: !Ref MinecraftMountDirectory
 
 Resources:
   LambdaRole:
@@ -54,6 +68,29 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Policies:
+        - PolicyName: AllowEfsVpc
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: AWSLambdaVPCAccessExecutionRole
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+              - Sid: AmazonElasticFileSystemClientFullAccess
+                Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientRootAccess
+                  - elasticfilesystem:ClientWrite
+                  - elasticfilesystem:DescribeMountTargets
+                Resource: '*'
 
   SessionKey:
     Type: AWS::SecretsManager::Secret
@@ -70,6 +107,17 @@ Resources:
       FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-frontend-proxy
       Handler: index.handler
       Role: !GetAtt LambdaRole.Arn
+      VpcConfig:
+        Ipv6AllowedForDualStack: true
+        SecurityGroupIds:
+          - !Ref ServiceSecurityGroupId
+        SubnetIds:
+          - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-a-public-id}}'
+          - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-b-public-id}}'
+          - !Sub '{{resolve:ssm:/vpc/${VpcName}/subnet-c-public-id}}'
+      FileSystemConfigs:
+        - Arn: !Ref FileSystemAccessPointArn
+          LocalMountPath: !Ref MinecraftMountDirectory
   FrontendProxyLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

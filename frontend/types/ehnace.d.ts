@@ -1,11 +1,19 @@
 declare module '@enhance/ssr' {
   import { EnhanceElemFn } from '@enhance/types';
 
-  type EnhanceOptions = {
+  export type StyleTransformerOptions = {
+    attrs: Array<unknown>;
+    raw: string;
+    tagName: string;
+    context: string;
+  };
+  export type StyleTransformerFn = (options: StyleTransformerOptions) => string;
+
+  export type EnhanceOptions = {
     initialState: Record<string, unknown>;
     elements: Record<string, EnhanceElemFn>;
     // scriptTransforms: [],
-    // styleTransforms: [],
+    styleTransforms?: Array<StyleTransformerFn>;
   };
   function HtmlTemplateFunction(strings: string[], ...expr: string[]): string;
   export default function enhance(options: EnhanceOptions): HtmlTemplateFunction;

@@ -1,6 +1,11 @@
-export interface StateBase extends Record<string, unknown> {
+export interface State {
   head: {
     title?: string;
     description?: string;
   };
+  // file-editor state
+  filesDirectory?: string;
+  currentPath?: string;
+  isDirectory?: boolean;
+  files?: Array<{ name: string; path: string; isDirectory: boolean }>;
 }

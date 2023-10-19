@@ -10,7 +10,7 @@ import internalServerErrorPage from './default-pages/500/index.mjs';
 
 /** @typedef RenderResult
  * @property {string} [body]
- * @property {import('./index.types.mjs').StateBase} [state]
+ * @property {import('./index.types.mjs').State} [state]
  * @property {import('../session/index.mjs').Session} session
  * @property {Record<string, string>} [headers]
  * @property {boolean} [isBase64Encoded]

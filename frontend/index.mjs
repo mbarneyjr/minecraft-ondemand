@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import enhance from '@enhance/ssr';
+import styleTransform from '@enhance/enhance-style-transform';
 
 import { logger } from './lib/logger/index.mjs';
 import { routerHandler } from './lib/router/index.mjs';
@@ -36,6 +37,7 @@ export async function handler(event, context) {
   const headHtml = head(parsedEvent, renderResult.state);
   const html = enhance({
     elements,
+    styleTransforms: [styleTransform],
     initialState: {
       ...renderResult.state,
       path: event.requestContext.http.path,

@@ -1,7 +1,7 @@
 /* eslint-disable-next-line no-unused-vars */
 /**
  * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('../lib/router/index.types.mjs').StateBase | undefined} state
+ * @param {import('../lib/router/index.types.mjs').State | undefined} state
  * @returns {string}
  */
 export default function Head(event, state) {

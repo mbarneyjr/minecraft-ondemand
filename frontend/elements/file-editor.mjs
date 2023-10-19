@@ -1,4 +1,5 @@
 import { config } from '../lib/config/index.mjs';
+import { logger } from '../lib/logger/index.mjs';
 
 export const ELEMENT_NAME = 'file-editor';
 
@@ -81,7 +82,10 @@ export function element({ html, state }) {
   const isDirectory = appState.isDirectory;
   const files = appState.files;
 
-  if (!filesDirectory || !currentPath || !isDirectory || !files) throw new Error('missing state');
+  if (filesDirectory === undefined || currentPath === undefined || isDirectory === undefined || files === undefined) {
+    logger.error('missing state', { filesDirectory, currentPath, isDirectory, files });
+    throw new Error('missing state');
+  }
 
   return html`
     <style>

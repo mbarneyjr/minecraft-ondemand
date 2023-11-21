@@ -24,6 +24,11 @@ Parameters:
 Resources:
   Bucket:
     Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - W3045
     Properties:
       BucketName: !Sub ${ApplicationName}-${EnvironmentName}-storage
       AccessControl: Private

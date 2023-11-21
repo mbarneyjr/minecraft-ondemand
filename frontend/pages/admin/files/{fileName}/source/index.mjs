@@ -13,13 +13,14 @@ const fileEditorHandler = async (event, session) => {
       session,
     };
   }
-  const source = readFileSync(`${config.filesDirectory}/${fileName}`).toString();
+  const source = readFileSync(`${config.filesDirectory}/${fileName}`).toString('base64');
   const extension = path.extname(fileName).substring(1);
   return {
     body: source,
     headers: {
       'content-type': mimeTypes[extension] ?? 'application/octet-stream',
     },
+    isBase64Encoded: true,
     state: {
       head: {
         title: `Admin - ${fileName}`,

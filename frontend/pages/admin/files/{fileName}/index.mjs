@@ -1,24 +1,37 @@
-import { existsSync, lstatSync, readdirSync } from 'fs';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'fs';
 import { config } from '../../../../lib/config/index.mjs';
 import authMiddleware from '../../../../lib/middleware/auth/index.mjs';
 
 /** @type {import('../../../../lib/router/index.mjs').RenderFunction} */
 const fileEditorHandler = async (event, session) => {
   const requestedPath = event.pathParameters?.['*'] ?? '';
-  const filePath = requestedPath ? `${config.filesDirectory}/${requestedPath}` : config.filesDirectory;
-  if (!existsSync(filePath)) {
+  const currentFilePath = requestedPath ? `${config.filesDirectory}/${requestedPath}` : config.filesDirectory;
+  if (!existsSync(currentFilePath)) {
     return {
       statusCode: 404,
       session,
     };
   }
-  const requestedFile = lstatSync(filePath);
+  const requestedFile = lstatSync(currentFilePath);
   const files = requestedFile.isDirectory()
-    ? readdirSync(filePath, { withFileTypes: true }).map((f) => ({
-        name: f.name,
-        isDirectory: f.isDirectory(),
-        path: requestedPath ? `${requestedPath}/${f.name}` : f.name,
-      }))
+    ? readdirSync(currentFilePath, { withFileTypes: true }).map((f) => {
+        const filePath = requestedPath ? `${requestedPath}/${f.name}` : f.name;
+        /** @type {'binary' | 'directory' | 'text'} */
+        let fileType = 'binary';
+        if (f.isDirectory()) {
+          fileType = 'directory';
+        } else {
+          const fileContents = readFileSync(filePath);
+          if (!/\ufffd/.test(fileContents.toString())) {
+            fileType = 'text';
+          }
+        }
+        return {
+          name: f.name,
+          path: filePath,
+          fileType,
+        };
+      })
     : [];
 
   const html = /* html */ `
@@ -28,9 +41,18 @@ const fileEditorHandler = async (event, session) => {
         height: 200px;
       }
     </style>
-    <title-bar></title-bar>
+    <header>
+      <title-bar></title-bar>
+    </header>
     <main>
-      <file-editor></file-editor>
+      <section>
+        <a href="/admin" style="display: block;">
+          <button accent>
+            Back
+          </button>
+        </a>
+        <file-editor></file-editor>
+      </section>
     </main>
   `;
 

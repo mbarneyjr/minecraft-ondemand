@@ -1,7 +1,56 @@
-<title-bar></title-bar>
+<style>
+  h1 {
+    padding-bottom: 1rem;
+  }
+  #control-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  #control-panel > a {
+    flex-grow: 1;
+    align-self: stretch;
+  }
+  button {
+    height: 100%;
+    width: 100%;
+  }
+  section {
+    padding: 1rem;
+  }
+</style>
+<header>
+  <title-bar></title-bar>
+</header>
 <main>
-  <p>Welcome to the admin page!</p>
-  <admin-control-list>
-    <a href="/admin/files">File Explorer</a>
-  </admin-control-list>
+  <section>
+    <h1>Welcome to the admin page!</h1>
+    <content-card secondary id="control-panel">
+      <a href="/admin/files">
+        <button primary>
+          <h2>Power On</h2>
+          <p>Turn on the Minecraft Server</p>
+        </button>
+      </a>
+      <a href="/admin/files">
+        <button>
+          <h2>Player List</h2>
+          <p>View the list of players on the server</p>
+        </button>
+      </a>
+      <a href="/admin/files">
+        <button>
+          <h2>Generate Map</h2>
+          <p>Generate a map of the Minecraft world</p>
+        </button>
+      </a>
+      <a href="/admin/files">
+        <button>
+          <h2>File Explorer</h2>
+          <p>Browse and edit the Minecraft server files</p>
+        </button>
+      </a>
+    </content-card>
+  </section>
 </main>

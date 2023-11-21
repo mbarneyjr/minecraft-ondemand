@@ -18,7 +18,7 @@ export function isLoggedIn(session) {
  * @param {string} group
  * @returns {boolean}
  */
-function sessionIsMember(session, group) {
+export function sessionIsMember(session, group) {
   if (session.idToken) {
     const parsed = jwt.parse(session.idToken);
     if (!parsed.payload) {

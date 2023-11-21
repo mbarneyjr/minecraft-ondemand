@@ -4,11 +4,11 @@ import { logger } from '../lib/logger/index.mjs';
 export const ELEMENT_NAME = 'file-editor';
 
 /**
- * @param {{ name: string, isDirectory: boolean, path: string }} file
+ * @param {{ name: string, path: string, fileType: 'binary' | 'text' | 'directory' }} file
  */
 function fileListItem(file) {
-  const displayName = `${file.name}${file.isDirectory ? '/' : ''}`;
-  const fileUrl = `/admin/files/${file.path}`;
+  const displayName = `${file.name}${file.fileType === 'directory' ? '/' : ''}`;
+  const fileUrl = file.fileType === 'binary' ? `/admin/file-source/${file.path}` : `/admin/files/${file.path}`;
   return /* html */ `
     <li>
       <a href="${fileUrl}">${displayName}</a>
@@ -17,7 +17,7 @@ function fileListItem(file) {
 }
 
 /**
- * @param {Array<{ name: string, isDirectory: boolean, path: string }>} files
+ * @param {Array<{ name: string, path: string, fileType: 'binary' | 'text' | 'directory' }>} files
  */
 function fileList(files) {
   return /* html */ `
@@ -27,14 +27,16 @@ function fileList(files) {
         padding: 0;
         display: flex;
         flex-direction: column;
-      }
-      li {
-        background-color: #eee;
+        background-color: var(--background);
+        color: var(--text);
+        border: 1px solid var(--text);
       }
       li:hover {
-        background-color: #ccc;
+        background-color: var(--text);
+        color: var(--background);
       }
       li a {
+        display: block;
         font-family: monospace;
       }
     </style>
@@ -57,11 +59,14 @@ function fileEditor(currentPath) {
       textarea {
         width: 100%;
         height: 100%;
+        font-family: monospace;
+        background-color: var(--background);
+        color: var(--text);
       }
     </style>
-    <form id="file-editor-form" action="/admin/files${currentPath}" method="post">
+    <form id="file-editor-form" action="/admin/files/${currentPath}" method="post">
       <textarea form="file-editor-form" name="file" id="file" cols="35" wrap="soft"></textarea>
-      <input type="submit" value="Save" />
+      <button type="submit">Save</button>
     </form>
     <script>
       async function setup() {
@@ -87,15 +92,32 @@ export function element({ html, state }) {
     throw new Error('missing state');
   }
 
+  const parentPaths = currentPath.split('/');
+  const parentPathLinks = parentPaths
+    .map((_, i) => {
+      const path = parentPaths.slice(0, i + 1).join('/');
+      return /* html */ `
+        <a style="display: inline" href="/admin/files/${path}">${parentPaths[i]}</a>
+      `;
+    })
+    .join('/');
+
   return html`
     <style>
       h1 {
         font-family: monospace;
         font-size: 100%;
-        font-weight: normal;
+        padding: 1rem 0;
+      }
+      h1 a {
+        color: var(--text);
+        padding: 0.25rem 0rem;
+      }
+      h1 a:hover {
+        text-decoration: underline;
       }
     </style>
-    <h1><pre>${filesDirectory}/${currentPath}</pre></h1>
+    <h1>/ <a href="/admin/files">root</a> / ${parentPathLinks}</h1>
 
     ${isDirectory ? fileList(files) : fileEditor(currentPath)}
   `;

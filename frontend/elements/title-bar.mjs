@@ -1,3 +1,5 @@
+import { sessionIsMember } from '../lib/middleware/auth/index.mjs';
+
 export const ELEMENT_NAME = 'title-bar';
 
 /**
@@ -8,14 +10,16 @@ export function element({ html, state }) {
   const isAuthenticated =
     state.store?.session?.idToken && state.store?.session?.accessToken && state.store?.session?.refreshToken;
   const authLink = isAuthenticated
-    ? /* html */ `<a class="link" href="/logout">Log Out</a>`
-    : /* html */ `<a class="link" href="/login">Log In</a>`;
+    ? /* html */ `<a href="/logout" slot="right">Log Out</a>`
+    : /* html */ `<a href="/login" slot="right">Log In</a>`;
+  const adminLink = sessionIsMember(state.store.session, 'admins')
+    ? /* html */ `<a ${currentPath === '/admin' ? 'active' : ''} href="/admin" slot="right">Admin</a>`
+    : '';
   return html`
     <nav-bar breakpoint="512px">
-      <a href="/" slot="title">mc.mbarney.me</a>
-      <a class="link ${currentPath === '/' ? 'active' : ''}" href="/">Go Home</a>
-      <a class="link ${currentPath === '/admin' ? 'active' : ''}" href="/admin">Admin</a>
-      ${authLink}
+      <a href="/" slot="left">mc.mbarney.me</a>
+      <button primary slot="left" id="theme-toggle">Switch Theme</button>
+      ${adminLink} ${authLink}
     </nav-bar>
   `;
 }

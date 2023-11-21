@@ -7,5 +7,5 @@ export interface State {
   filesDirectory?: string;
   currentPath?: string;
   isDirectory?: boolean;
-  files?: Array<{ name: string; path: string; isDirectory: boolean }>;
+  files?: Array<{ name: string; path: string; fileType: 'binary' | 'text' | 'directory' }>;
 }

@@ -12,5 +12,5 @@ export const config = {
     pageSize: 10,
   },
   appEndpoint: process.env.APP_ENDPOINT,
-  filesDirectory: process.env.MINECRAFT_MOUNT_DIRECTORY ?? '.',
+  filesDirectory: process.env.MINECRAFT_MOUNT_DIRECTORY ?? './',
 };

@@ -7,10 +7,14 @@
     "@mbarneyjr/webcomponents": "^2.1.0",
     "@medley/router": "^0.2.1",
     "cookie": "^0.5.0",
+    "he": "^1.2.0",
     "node-fetch": "^3.3.0",
     "node-webtokens": "^1.0.4"
   },
   "scripts": {
     "start": "nodemon -r -e mjs,html,css dotenv/config local/server.mjs"
+  },
+  "devDependencies": {
+    "@types/he": "^1.2.3"
   }
 }

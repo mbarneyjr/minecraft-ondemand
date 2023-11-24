@@ -4,7 +4,7 @@ import { logger } from '../../../../lib/logger/index.mjs';
 import authMiddleware from '../../../../lib/middleware/auth/index.mjs';
 
 /**
- * @param {import('fs').Dirent} f
+ * @param {import('fs').Dirent | import('fs').Stats} f
  * @param {string} absoluteFilePath
  * @returns {'binary' | 'directory' | 'text'}
  */

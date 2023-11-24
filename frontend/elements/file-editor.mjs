@@ -1,5 +1,4 @@
 import he from 'he';
-import { config } from '../lib/config/index.mjs';
 import { logger } from '../lib/logger/index.mjs';
 
 export const ELEMENT_NAME = 'file-editor';
@@ -36,13 +35,15 @@ export function element({ html, state }) {
     `;
   });
 
-  const filePath = `${fileEditorState.currentDirectory}/${fileEditorState.currentFile.name}`;
   let fileEditorHtml = '';
   if (fileEditorState.currentFile) {
-    if (fileEditorState.currentFile.fileType === 'text') {
+    const filePath = `${fileEditorState.currentDirectory}/${fileEditorState.currentFile.name}`;
+    if (fileEditorState.currentFile.fileType === 'text' && fileEditorState.currentFileContent) {
       fileEditorHtml = /* html */ `
         <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post">
-          <textarea form="file-editor-form" class="editor" name="file" id="file" cols="35" wrap="soft">${fileEditorState.currentFileContent}</textarea>
+          <textarea form="file-editor-form" class="editor" name="file" id="file" cols="35" wrap="soft">${he.escape(
+            fileEditorState.currentFileContent,
+          )}</textarea>
           <button type="submit">Save</button>
         </form>
       `;

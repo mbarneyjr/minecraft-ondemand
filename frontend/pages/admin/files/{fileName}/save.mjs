@@ -59,9 +59,7 @@ const saveFileHandler = async (event, session) => {
     }
     const binaryString = [...parsedFormBody.file.value.content].map((b) => b.toString(2).padStart(8, '0')).join('');
     logger.debug('binary string', { binaryString });
-    writeFileSync(filePath, parsedFormBody.file.value.content, {
-      encoding: parsedFormBody.file.value.encoding,
-    });
+    writeFileSync(filePath, parsedFormBody.file.value.content);
   } else if ('file-source' in parsedFormBody) {
     if (parsedFormBody['file-source'].type !== 'field') {
       logger.error('event body\'s `file-source` is not a "field" type');

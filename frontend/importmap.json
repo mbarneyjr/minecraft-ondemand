@@ -1,11 +1,7 @@
 {
-  "env": [
-    "browser",
-    "development",
-    "module"
-  ],
+  "env": ["browser", "development", "module"],
   "imports": {
-    "@mbarneyjr/webcomponents": "https://ga.jspm.io/npm:@mbarneyjr/webcomponents@2.1.0/src/index.mjs"
+    "@mbarneyjr/webcomponents": "https://ga.jspm.io/npm:@mbarneyjr/webcomponents@2.2.0/src/index.mjs"
   },
   "scopes": {
     "https://ga.jspm.io/": {

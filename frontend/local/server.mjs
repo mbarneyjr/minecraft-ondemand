@@ -17,6 +17,8 @@ liveReloadServer.server.once('connection', () => {
 app.use(connectLivereload());
 app.set('query parser', 'simple');
 app.use(express.urlencoded({ extended: false }));
+// support parsing multipart/form-data
+app.use(express.text({ type: 'multipart/form-data' }));
 app.use(express.json({ strict: false }));
 app.disable('etag');
 
@@ -59,6 +61,9 @@ app.all('/*', async (req, res) => {
     }
   }
 
+  logger.debug('request body', { body: req.body });
+  const lambdaBody = req.body && typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+
   /** @type {import('aws-lambda').APIGatewayProxyEventV2} */
   const lambdaEvent = {
     version: '2.0',
@@ -68,7 +73,7 @@ app.all('/*', async (req, res) => {
       ? Object.entries(cookie.parse(req.headers.cookie)).map(([key, value]) => `${key}=${value}`)
       : [],
     headers: normalizedHeaders,
-    body: JSON.stringify(req.body),
+    body: lambdaBody,
     rawQueryString: `${new URLSearchParams(normalizedQuerystringParameters)}`,
     queryStringParameters: normalizedQuerystringParameters,
     isBase64Encoded: false,

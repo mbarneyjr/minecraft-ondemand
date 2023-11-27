@@ -1,4 +1,6 @@
+import { createHash } from 'crypto';
 import { existsSync, lstatSync, readdirSync, readFileSync } from 'fs';
+import { inspect } from 'util';
 import { config } from '../../../../lib/config/index.mjs';
 import { logger } from '../../../../lib/logger/index.mjs';
 import authMiddleware from '../../../../lib/middleware/auth/index.mjs';
@@ -45,14 +47,16 @@ const fileEditorHandler = async (event, session) => {
   let currentFile;
   /** @type {string | undefined} */
   let currentFileContent;
-  if (absoluteRequestedPathStat.isFile()) {
-    const fileType = getFileType(absoluteRequestedPathStat, absoluteRequestedPath);
+  const fileType = getFileType(absoluteRequestedPathStat, absoluteRequestedPath);
+  if (fileType !== 'directory') {
     currentFile = {
       name: requestedPath.replace(/.*\//, ''),
       fileType,
     };
     if (fileType === 'text') {
       currentFileContent = readFileSync(absoluteRequestedPath).toString();
+    } else {
+      currentFileContent = createHash('md5').update(readFileSync(absoluteRequestedPath)).digest('hex');
     }
   } else {
     currentFile = {
@@ -80,11 +84,12 @@ const fileEditorHandler = async (event, session) => {
     </header>
     <main>
       <section>
-        <a href="/admin" style="display: block;">
-          <button accent>
-            Back to admin portal
-          </button>
-        </a>
+        <div class="flex">
+          <a href="/admin" style="flex-shrink: 1">
+            <button accent>Back</button>
+          </a>
+          <h1 style="text-align: center; flex-grow: 10">File Explorer</h1>
+        </div>
         <file-editor></file-editor>
       </section>
     </main>

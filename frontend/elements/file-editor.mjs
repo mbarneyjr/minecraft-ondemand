@@ -23,13 +23,14 @@ export function element({ html, state }) {
   });
 
   const fileElements = fileEditorState.files.map((f) => {
+    const isCurrentFile = fileEditorState.currentFile?.name === f.name;
     const link =
       fileEditorState.currentDirectory === ''
         ? `/admin/files/${f.name}`
         : `/admin/files/${fileEditorState.currentDirectory}/${f.name}`;
 
     return /* html */ `
-      <li>
+      <li ${isCurrentFile ? 'active' : ''}>
         <a href="${link}">${f.fileType === 'directory' ? `${f.name}/` : f.name}</a>
       </li>
     `;
@@ -40,36 +41,46 @@ export function element({ html, state }) {
     const filePath = `${fileEditorState.currentDirectory}/${fileEditorState.currentFile.name}`;
     if (fileEditorState.currentFile.fileType === 'text' && fileEditorState.currentFileContent) {
       fileEditorHtml = /* html */ `
-        <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post">
-          <textarea form="file-editor-form" class="editor" name="file" id="file" cols="35" wrap="soft">${he.escape(
+        <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
+          <textarea form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
             fileEditorState.currentFileContent,
           )}</textarea>
-          <button type="submit">Save</button>
+          <div>
+            <button type="submit">Save</button>
+          </div>
         </form>
       `;
     } else if (fileEditorState.currentFile.fileType === 'binary') {
       fileEditorHtml = /* html */ `
-        <div class="download-upload-buttons">
-          <a href="/admin/file-source/${filePath}" download>
-            <button primary>Download ${fileEditorState.currentFile.name}</button>
-          </a>
-        </div>
+        <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
+          <textarea readonly form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">hash: ${he.escape(
+            `${fileEditorState.currentFileContent}`,
+          )}</textarea>
+          <div>
+            <a href="/admin/file-source/${filePath}" download>
+              <button primary>Download</button>
+            </a>
+            <input type="file" id="file" name="file">
+            <button type="submit">Save</button>
+          </div>
+        </form>
       `;
     }
   }
 
   return html`
     <style>
-      h1 {
+      .file-path {
         font-family: monospace;
         font-size: 100%;
+        font-weight: bold;
         padding: 1rem 0;
       }
-      h1 a {
+      .file-path a {
         color: var(--text);
         padding: 0.25rem 0rem;
       }
-      h1 a:hover {
+      .file-path a:hover {
         text-decoration: underline;
       }
       ul {
@@ -82,6 +93,10 @@ export function element({ html, state }) {
         border: 1px solid var(--text);
       }
       li:hover {
+        background-color: var(--text);
+        color: var(--background);
+      }
+      li[active] {
         background-color: var(--text);
         color: var(--background);
       }
@@ -112,11 +127,8 @@ export function element({ html, state }) {
       .editor {
         flex-grow: 10;
       }
-      .download-upload-buttons {
-        flex-shrink: 1;
-      }
     </style>
-    <h1>/ ${homeLink} / ${pathLinks.join(' / ')}</h1>
+    <div class="file-path">/ ${homeLink} / ${pathLinks.join(' / ')}</div>
     <div class="container">
       <ul>
         ${fileElements.join('\n')}

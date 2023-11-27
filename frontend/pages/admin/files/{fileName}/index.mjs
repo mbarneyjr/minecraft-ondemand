@@ -1,6 +1,5 @@
 import { createHash } from 'crypto';
 import { existsSync, lstatSync, readdirSync, readFileSync } from 'fs';
-import { inspect } from 'util';
 import { config } from '../../../../lib/config/index.mjs';
 import { logger } from '../../../../lib/logger/index.mjs';
 import authMiddleware from '../../../../lib/middleware/auth/index.mjs';

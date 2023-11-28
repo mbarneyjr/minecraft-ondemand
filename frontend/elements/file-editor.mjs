@@ -39,46 +39,27 @@ export function element({ html, state }) {
     });
 
   let fileEditorHtml = '';
-  if (fileEditorState.currentFile) {
+  if (fileEditorState.currentFile && fileEditorState.currentFileContent) {
     const filePath =
       fileEditorState.currentDirectory === ''
         ? `${fileEditorState.currentFile.name}`
         : `${fileEditorState.currentDirectory}/${fileEditorState.currentFile.name}`;
-    if (fileEditorState.currentFile.fileType === 'text' && fileEditorState.currentFileContent) {
-      fileEditorHtml = /* html */ `
-        <div id="editor" class="editor">
-          <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
-            <textarea contenteditable form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
-              fileEditorState.currentFileContent,
-            )}</textarea>
-            <div class="buttons">
-              <input for="file-editor-form" type="file" id="file" name="file">
-              <button for="file-editor-form" type="submit">Upload</button>
-              <a href="/admin/file-source/${filePath}" download>
-                <button primary>Download</button>
-              </a>
-            </div>
-          </form>
+    fileEditorHtml = /* html */ `
+      <div id="editor" class="editor">
+        <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
+          <textarea contenteditable form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
+            fileEditorState.currentFileContent,
+          )}</textarea>
+        </form>
+        <div class="buttons">
+          <input form="file-editor-form" type="file" id="file" name="file" />
+          <button form="file-editor-form" type="submit">Upload</button>
+          <a href="/admin/file-source/${filePath}" download>
+            <button primary>Download</button>
+          </a>
         </div>
-      `;
-    } else if (fileEditorState.currentFile.fileType === 'binary') {
-      fileEditorHtml = /* html */ `
-        <div id="editor" class="editor">
-          <form id="file-editor-form" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
-            <textarea contenteditable readonly form="file-editor-form" id="file-source" wrap="off">hash: ${he.escape(
-              `${fileEditorState.currentFileContent}`,
-            )}</textarea>
-            <div class="buttons">
-              <input for="file-editor-form" type="file" id="file" name="file">
-              <button for="file-editor-form" type="submit">Upload</button>
-              <a href="/admin/file-source/${filePath}" download>
-                <button primary>Download</button>
-              </a>
-            </div>
-          </form>
-        </div>
-      `;
-    }
+      </div>
+    `;
   }
 
   return html`

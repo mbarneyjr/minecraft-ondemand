@@ -61,7 +61,12 @@ app.all('/*', async (req, res) => {
   }
 
   if (Buffer.isBuffer(req.body)) req.body = req.body.toString('binary');
-  const lambdaBody = req.body && typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  let lambdaBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  let isBase64Encoded = false;
+  if (lambdaBody) {
+    lambdaBody = Buffer.from(lambdaBody).toString('base64');
+    isBase64Encoded = true;
+  }
 
   /** @type {import('aws-lambda').APIGatewayProxyEventV2} */
   const lambdaEvent = {
@@ -75,7 +80,7 @@ app.all('/*', async (req, res) => {
     body: lambdaBody,
     rawQueryString: `${new URLSearchParams(normalizedQuerystringParameters)}`,
     queryStringParameters: normalizedQuerystringParameters,
-    isBase64Encoded: false,
+    isBase64Encoded,
     requestContext: {
       http: {
         method: req.method,

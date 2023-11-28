@@ -11,6 +11,7 @@
  */
 
 import Busboy from 'busboy';
+import { logger, errorJson } from '../logger/index.mjs';
 
 /**
  * @typedef {Record<string, {
@@ -29,17 +30,15 @@ import Busboy from 'busboy';
  */
 
 /**
- * @param {string} body
- * @param {{
- *   contentType?: string,
- * }} options
+ * @param {import('aws-lambda').APIGatewayProxyEventV2} event
  * @returns {Promise<FormResult>}
  */
-export const parseFormBody = async (body, options) => {
+export const parseFormBody = async (event) => {
   return new Promise((resolve, reject) => {
     const busboy = Busboy({
       headers: {
-        'content-type': options.contentType,
+        ...event.headers,
+        'content-type': event.headers['content-type'] || event.headers['Content-Type'],
       },
     });
     /** @type {FormResult} */
@@ -62,7 +61,12 @@ export const parseFormBody = async (body, options) => {
         file.on(
           'data',
           /** @param {Buffer} data */ (data) => {
-            content = data;
+            logger.info('parsing form file', { fieldname, receivedBytes: data.length });
+            if (!content) {
+              content = data;
+            } else {
+              content = Buffer.concat([content, data]);
+            }
           },
         );
         file.on('end', () => {
@@ -82,18 +86,22 @@ export const parseFormBody = async (body, options) => {
       },
     );
     busboy.on('field', (fieldname, value) => {
+      logger.info('parsing form field', { fieldname, value });
       result[fieldname] = {
         type: 'field',
         value,
       };
     });
     busboy.on('finish', () => {
+      logger.info('finished parsing form');
       resolve(result);
     });
     busboy.on('error', (error) => {
+      logger.error('error parsing form', { error: errorJson(error) });
       reject(error);
     });
-    busboy.write(body);
+
+    busboy.write(event.body, event.isBase64Encoded ? 'base64' : 'binary');
     busboy.end();
   });
 };

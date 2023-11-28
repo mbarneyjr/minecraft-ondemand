@@ -5,6 +5,7 @@ import connectLivereload from 'connect-livereload';
 
 import { handler } from '../index.mjs';
 import { logger } from '../lib/logger/index.mjs';
+import { parseFormBody } from '../lib/form/parse.mjs';
 
 const app = express();
 
@@ -18,8 +19,7 @@ app.use(connectLivereload());
 app.set('query parser', 'simple');
 app.use(express.urlencoded({ extended: false }));
 // support parsing multipart/form-data
-app.use(express.text({ type: 'multipart/form-data' }));
-app.use(express.json({ strict: false }));
+app.use(express.raw({ type: '*/*' }));
 app.disable('etag');
 
 const port = 3000;
@@ -61,7 +61,7 @@ app.all('/*', async (req, res) => {
     }
   }
 
-  logger.debug('request body', { body: req.body });
+  if (Buffer.isBuffer(req.body)) req.body = req.body.toString('binary');
   const lambdaBody = req.body && typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
   /** @type {import('aws-lambda').APIGatewayProxyEventV2} */

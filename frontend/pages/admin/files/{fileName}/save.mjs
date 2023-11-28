@@ -29,10 +29,7 @@ const saveFileHandler = async (event, session) => {
       session,
     };
   }
-  const parsedFormBody = await parseFormBody(event.body, {
-    contentType: event.headers['content-type'] || event.headers['Content-Type'],
-  });
-  logger.debug('parsed form body', { parsedFormBody });
+  const parsedFormBody = await parseFormBody(event);
 
   const formData = parseBody(event.body);
   if (typeof formData !== 'object' || formData === null) {

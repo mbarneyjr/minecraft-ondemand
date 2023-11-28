@@ -5,7 +5,6 @@ import connectLivereload from 'connect-livereload';
 
 import { handler } from '../index.mjs';
 import { logger } from '../lib/logger/index.mjs';
-import { parseFormBody } from '../lib/form/parse.mjs';
 
 const app = express();
 

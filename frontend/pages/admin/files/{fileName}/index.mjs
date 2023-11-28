@@ -22,8 +22,7 @@ function getFileType(f, absoluteFilePath) {
 
 /** @type {import('../../../../lib/router/index.mjs').RenderFunction} */
 const fileEditorHandler = async (event, session) => {
-  logger.debug('file editor handler', { event, session });
-  const requestedPath = event.pathParameters?.['*'] ?? '';
+  const requestedPath = decodeURIComponent(event.pathParameters?.['*'] ?? '');
   const absoluteRequestedPath = `${config.filesDirectory}/${requestedPath}`;
   logger.debug('exploring files', { requestedPath, absoluteRequestedPath });
   if (!existsSync(absoluteRequestedPath)) {
@@ -73,9 +72,22 @@ const fileEditorHandler = async (event, session) => {
 
   const html = /* html */ `
     <style>
-      file-editor {
-        display: block;
+      section {
         height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .title {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+      }
+      file-editor {
+        min-height: 40em;
+        flex: 1 1 auto;
+        width: 100%;
       }
     </style>
     <header>
@@ -83,11 +95,10 @@ const fileEditorHandler = async (event, session) => {
     </header>
     <main>
       <section>
-        <div class="flex">
-          <a href="/admin" style="flex-shrink: 1">
-            <button accent>Back</button>
-          </a>
-          <h1 style="text-align: center; flex-grow: 10">File Explorer</h1>
+        <div class="title">
+          <a href="/admin"><button accent>Back</button></a>
+          <h1>File Explorer</h1>
+          <div></div>
         </div>
         <file-editor></file-editor>
       </section>

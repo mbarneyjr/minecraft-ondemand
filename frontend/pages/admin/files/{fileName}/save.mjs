@@ -1,5 +1,6 @@
 import { existsSync, writeFileSync } from 'fs';
 import { decode, encode } from 'querystring';
+import { inspect } from 'util';
 import { config } from '../../../../lib/config/index.mjs';
 import { logger } from '../../../../lib/logger/index.mjs';
 import authMiddleware from '../../../../lib/middleware/auth/index.mjs';
@@ -19,7 +20,7 @@ function parseBody(body) {
 
 /** @type {import('../../../../lib/router/index.mjs').RenderFunction} */
 const saveFileHandler = async (event, session) => {
-  const fileName = event.pathParameters?.['*'] ?? '';
+  const fileName = decodeURIComponent(event.pathParameters?.['*'] ?? '');
   const filePath = `${config.filesDirectory}/${fileName}`;
   if (!existsSync(filePath)) {
     logger.info('file does not exist', { filePath });
@@ -58,7 +59,7 @@ const saveFileHandler = async (event, session) => {
       };
     }
     const binaryString = [...parsedFormBody.file.value.content].map((b) => b.toString(2).padStart(8, '0')).join('');
-    logger.debug('binary string', { binaryString });
+    logger.debug('binary string', { binaryString, bufferInspect: inspect(parsedFormBody.file.value.content) });
     writeFileSync(filePath, parsedFormBody.file.value.content);
   } else if ('file-source' in parsedFormBody) {
     if (parsedFormBody['file-source'].type !== 'field') {

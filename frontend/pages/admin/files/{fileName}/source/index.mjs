@@ -6,7 +6,7 @@ import { mimeTypes } from '../../../../../lib/mime-types/index.mjs';
 
 /** @type {import('../../../../../lib/router/index.mjs').RenderFunction} */
 const fileEditorHandler = async (event, session) => {
-  const fileName = event.pathParameters?.['*'];
+  const fileName = decodeURIComponent(event.pathParameters?.['*'] || '');
   if (!fileName || !existsSync(`${config.filesDirectory}/${fileName}`)) {
     return {
       statusCode: 404,

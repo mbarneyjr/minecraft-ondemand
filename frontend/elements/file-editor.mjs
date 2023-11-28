@@ -22,54 +22,66 @@ export function element({ html, state }) {
     `;
   });
 
-  const fileElements = fileEditorState.files.map((f) => {
-    const isCurrentFile = fileEditorState.currentFile?.name === f.name;
-    const link =
-      fileEditorState.currentDirectory === ''
-        ? `/admin/files/${f.name}`
-        : `/admin/files/${fileEditorState.currentDirectory}/${f.name}`;
+  const fileElements = fileEditorState.files
+    .sort((f) => (f.fileType === 'directory' ? -1 : 1))
+    .map((f) => {
+      const isCurrentFile = fileEditorState.currentFile?.name === f.name;
+      const link =
+        fileEditorState.currentDirectory === ''
+          ? `/admin/files/${f.name}`
+          : `/admin/files/${fileEditorState.currentDirectory}/${f.name}`;
 
-    return /* html */ `
+      return /* html */ `
       <li ${isCurrentFile ? 'active' : ''}>
         <a href="${link}">${f.fileType === 'directory' ? `${f.name}/` : f.name}</a>
       </li>
     `;
-  });
+    });
 
   let fileEditorHtml = '';
   if (fileEditorState.currentFile) {
-    const filePath = `${fileEditorState.currentDirectory}/${fileEditorState.currentFile.name}`;
+    const filePath =
+      fileEditorState.currentDirectory === ''
+        ? `${fileEditorState.currentFile.name}`
+        : `${fileEditorState.currentDirectory}/${fileEditorState.currentFile.name}`;
     if (fileEditorState.currentFile.fileType === 'text' && fileEditorState.currentFileContent) {
       fileEditorHtml = /* html */ `
-        <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
-          <textarea form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
-            fileEditorState.currentFileContent,
-          )}</textarea>
-          <div>
+        <div id="editor" class="editor">
+          <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
+            <textarea contenteditable form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
+              fileEditorState.currentFileContent,
+            )}</textarea>
             <button type="submit">Save</button>
-          </div>
-        </form>
+          </form>
+        </div>
       `;
     } else if (fileEditorState.currentFile.fileType === 'binary') {
       fileEditorHtml = /* html */ `
-        <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
-          <textarea readonly form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">hash: ${he.escape(
-            `${fileEditorState.currentFileContent}`,
-          )}</textarea>
-          <div>
+        <div id="editor" class="editor">
+          <form id="file-editor-form" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
+            <textarea contenteditable readonly form="file-editor-form" id="file-source" wrap="off">hash: ${he.escape(
+              `${fileEditorState.currentFileContent}`,
+            )}</textarea>
+          <div class="buttons">
+            <input for="file-editor-form" type="file" id="file" name="file">
+            <button for="file-editor-form" type="submit">Upload</button>
             <a href="/admin/file-source/${filePath}" download>
               <button primary>Download</button>
             </a>
-            <input type="file" id="file" name="file">
-            <button type="submit">Save</button>
           </div>
-        </form>
+          </form>
+        </div>
       `;
     }
   }
 
   return html`
     <style>
+      :host {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
       .file-path {
         font-family: monospace;
         font-size: 100%;
@@ -107,6 +119,7 @@ export function element({ html, state }) {
       form {
         display: flex;
         flex-direction: column;
+        height: 100%;
         gap: 1rem;
       }
       textarea {
@@ -116,21 +129,30 @@ export function element({ html, state }) {
         background-color: var(--background);
         color: var(--text);
       }
-      .container {
+      .editor-container {
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
+        flex-grow: 1;
       }
       ul {
         flex-grow: 1;
       }
       .editor {
         flex-grow: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
     </style>
     <div class="file-path">/ ${homeLink} / ${pathLinks.join(' / ')}</div>
-    <div class="container">
-      <ul>
+    <div class="editor-container">
+      <ul id="file-tree">
         ${fileElements.join('\n')}
       </ul>
       ${fileEditorHtml}

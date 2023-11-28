@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { decode, encode } from 'querystring';
 import { inspect } from 'util';
 import { config } from '../../../../lib/config/index.mjs';

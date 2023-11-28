@@ -47,16 +47,21 @@ export function element({ html, state }) {
     fileEditorHtml = /* html */ `
       <div id="editor" class="editor">
         <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
-          <textarea contenteditable form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
+          <textarea contenteditable ${
+            fileEditorState.currentFile.fileType === 'binary' ? 'readonly' : ''
+          } form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
             fileEditorState.currentFileContent,
           )}</textarea>
         </form>
-        <div class="buttons">
-          <input form="file-editor-form" type="file" id="file" name="file" />
-          <button form="file-editor-form" type="submit">Upload</button>
-          <a href="/admin/file-source/${filePath}" download>
-            <button primary>Download</button>
-          </a>
+        <div class="bottom-bar">
+          <div class="buttons">
+            <input form="file-editor-form" type="file" id="file" name="file" />
+            <button form="file-editor-form" type="submit">Upload</button>
+            <a href="/admin/file-source/${filePath}" download>
+              <button primary>Download</button>
+            </a>
+          </div>
+          <p class="file-type">File Type: ${fileEditorState.currentFile.fileType}</p>
         </div>
       </div>
     `;
@@ -131,10 +136,25 @@ export function element({ html, state }) {
         flex-direction: column;
         gap: 1rem;
       }
+      .bottom-bar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
       .buttons {
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
+      }
+      .file-type {
+        font-weight: bold;
+        background-color: var(--accent);
+        color: var(--background);
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
       }
     </style>
     <div class="file-path">/ ${homeLink} / ${pathLinks.join(' / ')}</div>

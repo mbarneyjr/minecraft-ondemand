@@ -4,6 +4,8 @@ import { config } from '../../../../lib/config/index.mjs';
 import { logger } from '../../../../lib/logger/index.mjs';
 import authMiddleware from '../../../../lib/middleware/auth/index.mjs';
 
+/** @typedef {import('../../../../lib/router/index.types.mjs').FileEditorState} FileEditorState */
+
 /**
  * @param {import('fs').Dirent | import('fs').Stats} f
  * @param {string} absoluteFilePath
@@ -25,50 +27,70 @@ const fileEditorHandler = async (event, session) => {
   const requestedPath = decodeURIComponent(event.pathParameters?.['*'] ?? '');
   const absoluteRequestedPath = `${config.filesDirectory}/${requestedPath}`;
   logger.debug('exploring files', { requestedPath, absoluteRequestedPath });
-  if (!existsSync(absoluteRequestedPath)) {
-    return {
-      statusCode: 404,
-      session,
-    };
-  }
-  const absoluteRequestedPathStat = lstatSync(absoluteRequestedPath);
-  let requestedDirectoryToExplore = '';
-  if (absoluteRequestedPathStat.isDirectory()) {
-    requestedDirectoryToExplore = requestedPath;
-  } else if (requestedPath.includes('/')) {
-    requestedDirectoryToExplore = requestedPath.replace(/\/[^/]+$/, '');
-  }
-  const absoluteDirectoryToExplore = `${config.filesDirectory}/${requestedDirectoryToExplore}`;
-  logger.debug('exploring directory', { requestedDirectoryToExplore, absoluteDirectoryToExplore });
 
-  /** @type {{ name: string; fileType: 'binary' | 'directory' | 'text'; } | undefined} */
-  let currentFile;
-  /** @type {string | undefined} */
-  let currentFileContent;
-  const fileType = getFileType(absoluteRequestedPathStat, absoluteRequestedPath);
-  if (fileType !== 'directory') {
-    currentFile = {
-      name: requestedPath.replace(/.*\//, ''),
-      fileType,
-    };
-    if (fileType === 'text') {
-      currentFileContent = readFileSync(absoluteRequestedPath).toString();
-    } else {
-      currentFileContent = createHash('md5').update(readFileSync(absoluteRequestedPath)).digest('hex');
+  // default to a file not found page
+  let fileEditorHtml = /* html */ `
+    <p>File not found</p>
+    <p>Would you like to create it?</p>
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="file-name" value="${encodeURIComponent(requestedPath)}" />
+      <input for="file-editor-form" type="file" id="file" name="file">
+      <input type="hidden" name="file-source" id="file-source" value="" />
+      <button primary type="submit">Create</button>
+    </form>
+  `;
+  /** @type {FileEditorState | undefined} */
+  let fileEditorState;
+
+  if (existsSync(absoluteRequestedPath)) {
+    const absoluteRequestedPathStat = lstatSync(absoluteRequestedPath);
+    let requestedDirectoryToExplore = '';
+    if (absoluteRequestedPathStat.isDirectory()) {
+      requestedDirectoryToExplore = requestedPath;
+    } else if (requestedPath.includes('/')) {
+      requestedDirectoryToExplore = requestedPath.replace(/\/[^/]+$/, '');
     }
-  } else {
-    currentFile = {
-      name: '',
-      fileType: 'directory',
+    const absoluteDirectoryToExplore = `${config.filesDirectory}/${requestedDirectoryToExplore}`;
+    logger.debug('exploring directory', { requestedDirectoryToExplore, absoluteDirectoryToExplore });
+
+    /** @type {{ name: string; fileType: 'binary' | 'directory' | 'text'; } | undefined} */
+    let currentFile;
+    /** @type {string | undefined} */
+    let currentFileContent;
+    const fileType = getFileType(absoluteRequestedPathStat, absoluteRequestedPath);
+    if (fileType !== 'directory') {
+      currentFile = {
+        name: requestedPath.replace(/.*\//, ''),
+        fileType,
+      };
+      if (fileType === 'text') {
+        currentFileContent = readFileSync(absoluteRequestedPath).toString();
+      } else {
+        currentFileContent = createHash('md5').update(readFileSync(absoluteRequestedPath)).digest('hex');
+      }
+    } else {
+      currentFile = {
+        name: '',
+        fileType: 'directory',
+      };
+      currentFileContent = undefined;
+    }
+    const files = readdirSync(absoluteDirectoryToExplore, { withFileTypes: true }).map((f) => {
+      return {
+        name: f.name,
+        fileType: getFileType(f, `${absoluteDirectoryToExplore}/${f.name}`),
+      };
+    });
+    fileEditorHtml = /* html */ `
+      <file-editor></file-editor>
+    `;
+    fileEditorState = {
+      currentDirectory: requestedDirectoryToExplore,
+      files,
+      currentFile,
+      currentFileContent,
     };
-    currentFileContent = undefined;
   }
-  const files = readdirSync(absoluteDirectoryToExplore, { withFileTypes: true }).map((f) => {
-    return {
-      name: f.name,
-      fileType: getFileType(f, `${absoluteDirectoryToExplore}/${f.name}`),
-    };
-  });
 
   const html = /* html */ `
     <style>
@@ -100,7 +122,7 @@ const fileEditorHandler = async (event, session) => {
           <h1>File Explorer</h1>
           <div></div>
         </div>
-        <file-editor></file-editor>
+        ${fileEditorHtml}
       </section>
     </main>
   `;
@@ -115,12 +137,7 @@ const fileEditorHandler = async (event, session) => {
         title: `Admin - ${requestedPath}`,
         description: 'Administrator portal file explorer',
       },
-      fileEditor: {
-        currentDirectory: requestedDirectoryToExplore,
-        files,
-        currentFile,
-        currentFileContent,
-      },
+      fileEditor: fileEditorState,
     },
     session,
   };

@@ -51,7 +51,13 @@ export function element({ html, state }) {
             <textarea contenteditable form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
               fileEditorState.currentFileContent,
             )}</textarea>
-            <button type="submit">Save</button>
+            <div class="buttons">
+              <input for="file-editor-form" type="file" id="file" name="file">
+              <button for="file-editor-form" type="submit">Upload</button>
+              <a href="/admin/file-source/${filePath}" download>
+                <button primary>Download</button>
+              </a>
+            </div>
           </form>
         </div>
       `;
@@ -62,13 +68,13 @@ export function element({ html, state }) {
             <textarea contenteditable readonly form="file-editor-form" id="file-source" wrap="off">hash: ${he.escape(
               `${fileEditorState.currentFileContent}`,
             )}</textarea>
-          <div class="buttons">
-            <input for="file-editor-form" type="file" id="file" name="file">
-            <button for="file-editor-form" type="submit">Upload</button>
-            <a href="/admin/file-source/${filePath}" download>
-              <button primary>Download</button>
-            </a>
-          </div>
+            <div class="buttons">
+              <input for="file-editor-form" type="file" id="file" name="file">
+              <button for="file-editor-form" type="submit">Upload</button>
+              <a href="/admin/file-source/${filePath}" download>
+                <button primary>Download</button>
+              </a>
+            </div>
           </form>
         </div>
       `;

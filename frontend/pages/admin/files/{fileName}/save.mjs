@@ -22,13 +22,6 @@ function parseBody(body) {
 const saveFileHandler = async (event, session) => {
   const fileName = decodeURIComponent(event.pathParameters?.['*'] ?? '');
   const filePath = `${config.filesDirectory}/${fileName}`;
-  if (!existsSync(filePath)) {
-    logger.info('file does not exist', { filePath });
-    return {
-      statusCode: 404,
-      session,
-    };
-  }
   if (!event.body) {
     logger.info('event body not given');
     return {
@@ -59,7 +52,10 @@ const saveFileHandler = async (event, session) => {
       };
     }
     const binaryString = [...parsedFormBody.file.value.content].map((b) => b.toString(2).padStart(8, '0')).join('');
-    logger.debug('binary string', { binaryString, bufferInspect: inspect(parsedFormBody.file.value.content) });
+    logger.debug('saving file from binary', {
+      binaryString,
+      bufferInspect: inspect(parsedFormBody.file.value.content),
+    });
     writeFileSync(filePath, parsedFormBody.file.value.content);
   } else if ('file-source' in parsedFormBody) {
     if (parsedFormBody['file-source'].type !== 'field') {
@@ -69,6 +65,9 @@ const saveFileHandler = async (event, session) => {
         session,
       };
     }
+    logger.debug('saving file from source', {
+      source: parsedFormBody['file-source'].value.substring(0, 100),
+    });
     const sanitizedFile = parsedFormBody['file-source'].value.replace(/\r\n/g, '\n');
     writeFileSync(filePath, sanitizedFile);
   } else {

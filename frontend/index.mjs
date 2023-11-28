@@ -17,7 +17,7 @@ import elements from './elements/index.mjs';
 export async function handler(event, context) {
   logger.info(
     'event',
-    {},
+    { event },
     {
       method: event.requestContext.http.method,
       path: event.requestContext.http.path,

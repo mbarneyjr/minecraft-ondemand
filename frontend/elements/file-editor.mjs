@@ -61,7 +61,7 @@ export function element({ html, state }) {
               <button primary>Download</button>
             </a>
           </div>
-          <p class="file-type">File Type: ${fileEditorState.currentFile.fileType}</p>
+          <content-pill accent>File Type: ${fileEditorState.currentFile.fileType}</content-pill>
         </div>
       </div>
     `;

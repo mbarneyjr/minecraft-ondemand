@@ -5,7 +5,7 @@
     "module"
   ],
   "imports": {
-    "@mbarneyjr/webcomponents": "https://ga.jspm.io/npm:@mbarneyjr/webcomponents@2.2.0/src/index.mjs"
+    "@mbarneyjr/webcomponents": "https://ga.jspm.io/npm:@mbarneyjr/webcomponents@2.2.1/src/index.mjs"
   },
   "scopes": {
     "https://ga.jspm.io/": {

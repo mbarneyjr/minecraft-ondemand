@@ -30,7 +30,7 @@ export default function Head(event, state) {
       <link rel="icon" href="/static/favicon.ico">
       <link rel="stylesheet" href="/static/globals.css">
       ${devHtml}
-      <link rel="stylesheet" href="https://unpkg.com/@mbarneyjr/webcomponents@2.2.1/src/styles/index.css" />
+      <link rel="stylesheet" href="https://unpkg.com/@mbarneyjr/webcomponents@2.3.0/src/styles/index.css" />
       <script
         async
         src="https://ga.jspm.io/npm:es-module-shims@1.8.0/dist/es-module-shims.js"

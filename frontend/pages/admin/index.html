@@ -2,55 +2,66 @@
   h1 {
     padding-bottom: 1rem;
   }
+  h2 {
+    text-align: center;
+  }
   #control-panel {
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    align-items: stretch;
   }
-  #control-panel > a {
-    flex-grow: 1;
-    align-self: stretch;
-  }
-  a > button {
-    height: 100%;
+  .server-controls {
     width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
   }
-  section {
-    padding: 1rem;
+  .control-element {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    gap: 1rem;
+  }
+  /* every control element but the last one, add a line at the bottom */
+  .control-element:not(:last-child) {
+    border-bottom: 2px solid var(--secondary);
   }
 </style>
 <header>
   <title-bar></title-bar>
 </header>
 <main>
-  <section>
-    <h1>Welcome to the admin page!</h1>
-    <content-card secondary id="control-panel">
-      <a href="/admin/files">
-        <button primary>
-          <h2>Power On</h2>
-          <p>Turn on the Minecraft Server</p>
-        </button>
-      </a>
-      <a href="/admin/files">
-        <button>
-          <h2>Player List</h2>
+  <section class="flex flex-column">
+    <h1>Welcome to the Admin Page!</h1>
+    <div secondary id="control-panel" class="flex flex-column">
+      <content-card class="server-controls">
+        <h2>Server Controls</h2>
+        <div class="control-element">
+          <p>Status: <content-pill primary>On</content-pill></p>
+          <button primary>Power On</button>
+        </div>
+        <div class="control-element">
+          <p>Generate a map!</p>
+          <button>Generate Map</button>
+        </div>
+      </content-card>
+      <content-card class="server-controls">
+        <h2>Other Utilities</h2>
+        <div class="control-element">
           <p>View the list of players on the server</p>
-        </button>
-      </a>
-      <a href="/admin/files">
-        <button>
-          <h2>Generate Map</h2>
-          <p>Generate a map of the Minecraft world</p>
-        </button>
-      </a>
-      <a href="/admin/files">
-        <button>
-          <h2>File Explorer</h2>
+          <a href="/admin/files" style="justify-content: space-between">
+            <button>Player List</button>
+          </a>
+        </div>
+        <div class="control-element">
           <p>Browse and edit the Minecraft server files</p>
-        </button>
-      </a>
-    </content-card>
+          <a href="/admin/files" style="justify-content: space-between">
+            <button>File Explorer</button>
+          </a>
+        </div>
+      </content-card>
+    </div>
   </section>
 </main>

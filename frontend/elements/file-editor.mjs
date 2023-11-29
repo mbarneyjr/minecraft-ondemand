@@ -39,7 +39,7 @@ export function element({ html, state }) {
     });
 
   let fileEditorHtml = '';
-  if (fileEditorState.currentFile && fileEditorState.currentFileContent) {
+  if (fileEditorState.currentFile && fileEditorState.currentFileContent !== undefined) {
     const filePath =
       fileEditorState.currentDirectory === ''
         ? `${fileEditorState.currentFile.name}`

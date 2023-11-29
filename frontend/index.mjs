@@ -27,10 +27,6 @@ export async function handler(event, context) {
   registerPages();
 
   const parsedEvent = structuredClone(event);
-  if (parsedEvent.isBase64Encoded && parsedEvent.body) {
-    parsedEvent.body = Buffer.from(parsedEvent.body, 'base64').toString();
-    parsedEvent.isBase64Encoded = false;
-  }
   const session = await parseSession(parsedEvent.cookies);
 
   const renderResult = await routerHandler(parsedEvent, session);

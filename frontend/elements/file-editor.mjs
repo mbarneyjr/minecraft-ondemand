@@ -48,8 +48,8 @@ export function element({ html, state }) {
       <div id="editor" class="editor">
         <form id="file-editor-form" class="editor" action="/admin/files/${filePath}" method="post" enctype="multipart/form-data">
           <textarea contenteditable ${
-            fileEditorState.currentFile.fileType === 'binary' ? 'readonly' : ''
-          } form="file-editor-form" class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
+            fileEditorState.currentFile.fileType === 'binary' ? 'readonly' : 'form="file-editor-form"'
+          }  class="editor" name="file-source" id="file-source" wrap="off">${he.escape(
             fileEditorState.currentFileContent,
           )}</textarea>
         </form>

@@ -60,10 +60,15 @@ app.all('/*', async (req, res) => {
     }
   }
 
-  if (Buffer.isBuffer(req.body)) req.body = req.body.toString('binary');
-  let lambdaBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  let lambdaBody = req.body;
   let isBase64Encoded = false;
-  if (lambdaBody) {
+  if (Buffer.isBuffer(req.body)) {
+    lambdaBody = req.body.toString('base64');
+    isBase64Encoded = true;
+  } else if (typeof req.body !== 'string') {
+    lambdaBody = JSON.stringify(req.body);
+  }
+  if (!isBase64Encoded) {
     lambdaBody = Buffer.from(lambdaBody).toString('base64');
     isBase64Encoded = true;
   }

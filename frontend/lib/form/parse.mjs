@@ -101,7 +101,11 @@ export const parseFormBody = async (event) => {
       reject(error);
     });
 
-    busboy.write(event.body, event.isBase64Encoded ? 'base64' : 'binary');
+    if (!event.body) {
+      throw new Error('event body not given');
+    }
+    const buffer = event.isBase64Encoded ? Buffer.from(event.body, 'base64') : Buffer.from(event.body);
+    busboy.write(buffer);
     busboy.end();
   });
 };

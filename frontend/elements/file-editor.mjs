@@ -7,7 +7,7 @@ export const ELEMENT_NAME = 'file-editor';
 export function element({ html, state }) {
   const appState = /** @type {import('../lib/router/index.types.mjs').State} */ (state.store);
   const fileEditorState = appState.fileEditor;
-  logger.debug('file editor element', { fileEditorState });
+  logger.debug('rendering file editor element', { fileEditorState });
   if (fileEditorState === undefined) {
     logger.error('missing state for file editor', { fileEditorState });
     throw new Error('missing state');

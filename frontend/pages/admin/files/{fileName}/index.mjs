@@ -64,13 +64,14 @@ const fileEditorHandler = async (event, session) => {
         name: requestedPath.replace(/.*\//, ''),
         fileType,
       };
+      logger.debug('reading current file', { absoluteRequestedPath });
+      const currentFileBuffer = readFileSync(absoluteRequestedPath);
       if (fileType === 'text') {
-        currentFileContent = readFileSync(absoluteRequestedPath).toString();
+        currentFileContent = currentFileBuffer.toString();
       } else {
-        const fileContent = readFileSync(absoluteRequestedPath);
         currentFileContent = [
-          `hash: ${createHash('md5').update(fileContent).digest('hex')}`,
-          `inspect: ${inspect(fileContent)}`,
+          `hash: ${createHash('md5').update(currentFileBuffer).digest('hex')}`,
+          `bytes: ${inspect(currentFileBuffer)}`,
         ].join('\n');
       }
     } else {
@@ -80,10 +81,11 @@ const fileEditorHandler = async (event, session) => {
       };
       currentFileContent = undefined;
     }
+    logger.debug('reading current directory', { absoluteDirectoryToExplore });
     const files = readdirSync(absoluteDirectoryToExplore, { withFileTypes: true }).map((f) => {
       return {
         name: f.name,
-        fileType: getFileType(f, `${absoluteDirectoryToExplore}/${f.name}`),
+        fileType: f.isDirectory() ? /** @type {const} */ ('directory') : /** @type {const} */ ('binary'),
       };
     });
     fileEditorHtml = /* html */ `

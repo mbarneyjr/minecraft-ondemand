@@ -44,7 +44,7 @@ Resources:
       FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-api-request-queue-processor
       CodeUri: ../artifacts/backend.zip
       Handler: trigger.triggerHandler
-      Runtime: nodejs16.x
+      Runtime: nodejs20.x
       Timeout: 60
       Environment:
         Variables:
@@ -75,7 +75,7 @@ Resources:
       FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-trigger-map-render
       CodeUri: ../artifacts/backend.zip
       Handler: render.renderHandler
-      Runtime: nodejs16.x
+      Runtime: nodejs20.x
       Timeout: 60
       Environment:
         Variables:

@@ -2,6 +2,7 @@
   "name": "frontend",
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-ecs": "^3.462.0",
     "@enhance/enhance-style-transform": "^0.1.2",
     "@enhance/ssr": "^3.0.9",
     "@mbarneyjr/webcomponents": "^2.1.0",

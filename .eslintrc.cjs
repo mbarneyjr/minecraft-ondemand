@@ -43,6 +43,7 @@ module.exports = {
     'arrow-body-style': 'off',
     'no-restricted-syntax': 'off',
     'no-await-in-loop': 'off',
+    'no-underscore-dangle': 'off',
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'import/no-cycle': 'off',

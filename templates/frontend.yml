@@ -36,6 +36,12 @@ Parameters:
   AuthBaseUrl:
     Type: String
     Description: The base URL of the Cognito user pool
+  EcsCluster:
+    Type: String
+    Description: The ID of the ECS cluster
+  EcsService:
+    Type: String
+    Description: The ID of the ECS service
 
 Globals:
   Function:
@@ -53,6 +59,8 @@ Globals:
         AUTH_BASE_URL: !Ref AuthBaseUrl
         SESSION_KEY: !Sub '{{resolve:secretsmanager:${SessionKey}}}'
         MINECRAFT_MOUNT_DIRECTORY: !Ref MinecraftMountDirectory
+        ECS_SERVICE: !Ref EcsService
+        ECS_CLUSTER: !Ref EcsCluster
 
 Resources:
   LambdaRole:

@@ -84,6 +84,8 @@ Resources:
         DomainName: !Ref DomainName
         AuthAppClientId: !GetAtt Auth.Outputs.AppClientId
         AuthBaseUrl: !GetAtt Auth.Outputs.AuthBaseUrl
+        EcsCluster: !GetAtt Service.Outputs.EcsCluster
+        EcsService: !GetAtt Service.Outputs.EcsService
 
   Map:
     Type: AWS::CloudFormation::Stack

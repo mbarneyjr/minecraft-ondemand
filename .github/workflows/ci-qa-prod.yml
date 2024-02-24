@@ -17,7 +17,7 @@ env:
   CPU: 2048
   WATCHDOG_IMAGE_URI: ${{ secrets.DEVOPS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/minecraft-ondemand-watchdog:0.0.9
   OVERVIEWER_IMAGE_URI: ${{ secrets.DEVOPS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/minecraft-overviewer-renderer:0.0.3
-  MINECRAFT_VERSION: '1.19.1'
+  MINECRAFT_VERSION: '1.20.4'
   MINECRAFT_SEED: '-7390720122552741106'
   MINECRAFT_OPS: Lexicham\,Lexicam
 

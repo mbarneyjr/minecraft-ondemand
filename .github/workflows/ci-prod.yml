@@ -1,14 +1,12 @@
-name: ci-dev
+name: ci-prod
 
 on:
   workflow_dispatch: {}
   push:
-    branches:
-      - main
-      - feat/sst
+    tags: '*'
 
 env:
-  TARGET_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}
+  TARGET_ACCOUNT_ID: ${{ secrets.PROD_ACCOUNT_ID }}
 
 permissions:
   id-token: write
@@ -19,8 +17,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment:
-      name: dev
-      url: https://mc.dev.barney.dev
+      name: prod
+      url: https://mc.barney.dev
     steps:
       - uses: actions/checkout@v4
       - name: Assume role
@@ -32,5 +30,4 @@ jobs:
       - name: Deploy
         run: |
           npm ci
-          npm run infra:deploy -- --stage dev
-
+          npm run infra:deploy -- --stage prod

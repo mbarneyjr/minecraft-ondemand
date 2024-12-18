@@ -1,6 +1,31 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "minecraft-ondemand",
+  "version": "0.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "sst dev",
+    "infra:diff": "sst diff",
+    "infra:deploy": "sst deploy",
+    "infra:remove": "sst remove",
+    "types": "tsc"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
-    "cfn-changeset-viewer": "^0.0.3",
-    "cfn-event-tailer": "^0.0.2"
+    "@pulumi/pulumi": "^3.142.0",
+    "@types/aws-lambda": "8.10.145",
+    "sst": "3.3.71",
+    "typescript": "^5.7.2",
+    "yaml": "^2.6.1"
+  },
+  "dependencies": {
+    "@pulumi/aws-native": "^1.9.0",
+    "cidr-tools": "^11.0.2"
   }
 }

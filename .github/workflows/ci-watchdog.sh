@@ -1,6 +1,10 @@
 name: ci-watchdog
 
-on: push
+on:
+  workflow_dispatch: {}
+  push:
+    branches: '*'
+    tags: 'watchdog*'
 
 permissions:
   id-token: write

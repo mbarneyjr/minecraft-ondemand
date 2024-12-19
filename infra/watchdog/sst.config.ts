@@ -94,8 +94,8 @@ export default $config({
     });
     const dockerTags: Array<$util.Input<string>> = [];
     const cacheFrom: $util.Input<Array<$util.Input<dockerBuild.types.input.CacheFromArgs>>> = [];
-    if (process.env.GITHUB_REF_TYPE === 'tag') {
-      dockerTags.push($interpolate`${repo.repositoryUrl}:${process.env.GITHUB_REF_NAME}`);
+    if (process.env.GITHUB_REF_TYPE === 'tag' && process.env.GITHUB_REF_NAME) {
+      dockerTags.push($interpolate`${repo.repositoryUrl}:${process.env.GITHUB_REF_NAME.replace('watchdog', '')}`);
       cacheFrom.push({
         registry: {
           ref: $interpolate`${repo.repositoryUrl}:${process.env.GITHUB_SHA}`,

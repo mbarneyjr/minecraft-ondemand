@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minecraft-ondemand/watchdog",
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "sst deploy --stage prod"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@pulumi/docker-build": "^0.0.8",
+    "sst": "^3.4.3"
+  }
+}

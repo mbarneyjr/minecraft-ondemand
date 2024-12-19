@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minecraft-ondemand/efs-file",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.mjs": "./*.mjs"
+  },
+  "exports": {
+    "./*": {
+      "import": "./src/*.mjs"
+    },
+    ".": {
+      "import": "./src/index.mjs"
+    }
+  },
+  "scripts": {
+    "types": "tsc"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  }
+}

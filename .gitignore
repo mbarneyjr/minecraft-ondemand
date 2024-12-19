@@ -7,3 +7,10 @@ artifacts
 .idea
 *~
 node_modules
+.env
+.env.*
+*.env
+*.env.*
+
+# sst
+.sst

@@ -3,7 +3,7 @@ name: ci-qa
 on:
   workflow_dispatch: {}
   push:
-    tags: '*'
+    tags: 'game*'
 
 env:
   TARGET_ACCOUNT_ID: ${{ secrets.QA_ACCOUNT_ID }}

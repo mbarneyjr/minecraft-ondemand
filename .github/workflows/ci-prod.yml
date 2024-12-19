@@ -2,8 +2,6 @@ name: ci-prod
 
 on:
   workflow_dispatch: {}
-  push:
-    tags: '*'
 
 env:
   TARGET_ACCOUNT_ID: ${{ secrets.PROD_ACCOUNT_ID }}

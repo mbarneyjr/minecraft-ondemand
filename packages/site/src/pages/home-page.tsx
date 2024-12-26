@@ -6,13 +6,13 @@ import { StopwatchIcon } from '#src/icons/stopwatch.js';
 import { BlocksIcon } from '#src/icons/blocks.js';
 import { SwordsIcon } from '#src/icons/swords.js';
 import { ShieldIcon } from '#src/icons/shield.js';
-import { Resource } from 'sst';
+import { config } from '#src/lib/config.js';
 
 const Hero: FC = (props) => {
   return (
     <section className="mx-auto flex min-h-64 flex-col items-center justify-center bg-gradient-to-b from-green-600 to-green-400 text-center text-white">
       <h1 className="font-green-100 py-8 text-4xl font-bold">
-        Welcome to <span className="text-yellow-300">{Resource.Config.rootDomainName}</span>
+        Welcome to <span className="text-yellow-300">{config.rootDomainName}</span>
       </h1>
       <p className="py-8">My on-demand Minecraft server</p>
     </section>
@@ -87,7 +87,7 @@ const Join: FC = (props) => {
     >
       <h2 className="text-4xl font-bold text-green-800">Join the Server!</h2>
       <p className="text-xl font-medium text-green-700">
-        Add <span className="font-mono text-green-400">{Resource.Config.rootDomainName}</span> in your server list.
+        Add <span className="font-mono text-green-400">{config.rootDomainName}</span> in your server list.
       </p>
     </section>
   );

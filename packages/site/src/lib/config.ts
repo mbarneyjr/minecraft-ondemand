@@ -11,7 +11,7 @@ try {
   };
 } catch (e) {
   config = {
-    rootDomainName: 'mc.mbarney.me',
+    rootDomainName: 'mc.barney.dev',
   };
 }
 

@@ -12,7 +12,8 @@
     "infra:diff": "sst diff",
     "infra:deploy": "sst deploy",
     "infra:remove": "sst remove",
-    "types": "tsc"
+    "types": "tsc",
+    "format": "prettier --write ."
   },
   "workspaces": [
     "packages/*"
@@ -20,6 +21,8 @@
   "devDependencies": {
     "@pulumi/pulumi": "^3.142.0",
     "@types/aws-lambda": "8.10.145",
+    "mime": "^4.0.6",
+    "prettier": "^3.4.2",
     "sst": "3.3.71",
     "typescript": "^5.7.2",
     "yaml": "^2.6.1"

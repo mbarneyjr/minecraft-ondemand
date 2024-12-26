@@ -5,10 +5,7 @@ import { efs, fileSystem, rootAccessPoint } from './efs';
 import { config } from './config';
 import { containerDefinitions } from './lib/container-definition';
 import { MinecraftService } from './lib/components/minecraft-service';
-
-// todo explore using aws.route53.Zone.get()
-const gotHostedZone = await aws.route53.getZone({ name: config.hostedZoneName });
-const zone = aws.route53.Zone.get('HostedZone', gotHostedZone.id);
+import { zone } from './data';
 
 export const cluster = new aws.ecs.Cluster('Cluster', {
   name: `${$app.name}-${$app.stage}`,

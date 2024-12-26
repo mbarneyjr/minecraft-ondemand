@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minecraft-ondemand/site",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.mjs": "./*.mjs"
+  },
+  "exports": {
+    "./*": {
+      "import": "./src/*.mjs"
+    },
+    ".": {
+      "import": "./src/index.mjs"
+    }
+  },
+  "scripts": {
+    "dev": "npm run serve",
+    "serve": "node --watch --watch-path . --import tsx ./src/app.tsx",
+    "types": "tsc"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@types/node": "^22.10.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  }
+}

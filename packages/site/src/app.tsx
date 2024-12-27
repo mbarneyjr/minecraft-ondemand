@@ -8,7 +8,7 @@ import { whitelist } from '#src/pages/whitelist.js';
 export const app = new Hono();
 
 app.get('/', (c) => {
-  return c.html(<HomePage />);
+  return c.html(<HomePage c={c} />);
 });
 
 app.get('/favicon.ico', async (c) => {

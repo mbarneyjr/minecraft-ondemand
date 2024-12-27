@@ -1,5 +1,5 @@
 import { Layout } from '#src/components/layout.js';
-import { FC } from 'hono/jsx';
+import { FC, PropsWithChildren } from 'hono/jsx';
 import { ServerIcon } from '#src/icons/server.js';
 import { RefreshIcon } from '#src/icons/refresh.js';
 import { StopwatchIcon } from '#src/icons/stopwatch.js';
@@ -7,6 +7,9 @@ import { BlocksIcon } from '#src/icons/blocks.js';
 import { SwordsIcon } from '#src/icons/swords.js';
 import { ShieldIcon } from '#src/icons/shield.js';
 import { config } from '#src/lib/config.js';
+import { Context } from 'hono';
+import { SuccessIcon } from '#src/icons/success.js';
+import { ErrorIcon } from '#src/icons/error.js';
 
 const Hero: FC = (props) => {
   return (
@@ -79,7 +82,20 @@ const ServerDetails: FC = (props) => {
   );
 };
 
-const Join: FC = (props) => {
+const Join: FC<PropsWithChildren<{ c: Context }>> = (props) => {
+  const { error, success } = props.c.req.query();
+  const icon =
+    error !== undefined ? (
+      <ErrorIcon className="inline h-6 w-6 text-red-800" />
+    ) : (
+      <SuccessIcon className="inline h-6 w-6 text-green-800" />
+    );
+  const messageStyles = error !== undefined ? 'text-red-800 bg-red-200' : 'text-green-800 bg-green-200';
+  const message = {
+    'invalid-username': 'Invalid username. Please try again.',
+    'no-admin-emails': 'There are no administrators for this server to approve your request.',
+    'request-sent': 'Your request has been sent!',
+  }[(error || success) ?? ''];
   return (
     <section id="join" className="mx-auto max-w-screen-lg">
       <div className="flex flex-col justify-center gap-4 py-8 text-center">
@@ -99,18 +115,24 @@ const Join: FC = (props) => {
           Your request will be reviewed. Add <span className="font-mono text-green-400">{config.rootDomainName}</span>{' '}
           in your server list.
         </p>
+        {message !== undefined ? (
+          <div className={`${messageStyles} flex items-center justify-center gap-1 p-4`}>
+            {icon}
+            <p className={''}>{message}</p>
+          </div>
+        ) : null}
       </div>
     </section>
   );
 };
 
-export const HomePage: FC = (props) => {
+export const HomePage: FC<PropsWithChildren<{ c: Context }>> = (props) => {
   return (
     <Layout>
       <Hero />
       <HowItWorks />
       <ServerDetails />
-      <Join />
+      <Join c={props.c} />
     </Layout>
   );
 };

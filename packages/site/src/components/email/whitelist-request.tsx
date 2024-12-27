@@ -7,11 +7,11 @@ import { EmailLayout } from './layout.js';
 export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
   return (
     <EmailLayout subject="Whitelist Request">
-      <div className={twi('p-4 text-lg')}>
+      <div className={twi('p-4 text-lg text-green-700')}>
         <p>The following user has requested to be whitelisted.</p>
       </div>
       <div className={twi('p-4 font-mono text-2xl')}>
-        <p className={twi('bg-green-100 p-4 text-center')}>{props.username}</p>
+        <p className={twi('bg-green-100 p-4 text-center text-green-600')}>{props.username}</p>
       </div>
       {/* TODO: add support for approving/rejecting requests through email */}
       {/* <div className={twi('flex w-full gap-4')} style="gap: 1rem"> */}

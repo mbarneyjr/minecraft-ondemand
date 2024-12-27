@@ -39,6 +39,7 @@ export const vanillaService = new MinecraftService('Vanilla', {
     SPIGET_RESOURCES: [
       '81534', // chunky, chunk pre-loader
     ].join(','),
+    ENABLE_WHITELIST: 'true',
   },
   vpc,
   fileSystem,

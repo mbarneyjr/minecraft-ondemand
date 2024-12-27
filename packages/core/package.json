@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minecraft-ondemand/core",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.mjs": "./*.js"
+  },
+  "exports": {
+    "./*": {
+      "import": "./src/*.js"
+    }
+  },
+  "scripts": {
+    "types": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.716.0",
+    "@aws-sdk/client-ses": "^3.716.0",
+    "@aws-sdk/lib-dynamodb": "^3.716.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2"
+  }
+}

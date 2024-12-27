@@ -2,8 +2,9 @@ import { fileURLToPath } from 'url';
 import { Hono } from 'hono';
 import type { FC } from 'hono/jsx';
 import { handle } from 'hono/aws-lambda';
-import { HomePage } from './pages/home-page.js';
-import { Favicon } from './icons/favicon.js';
+import { Favicon } from '#src/icons/favicon.js';
+import { HomePage } from '#src/pages/home-page.js';
+import { whitelist } from '#src/pages/whitelist.js';
 
 export const app = new Hono();
 
@@ -16,6 +17,8 @@ app.get('/favicon.ico', async (c) => {
   favicon.headers.set('Content-Type', 'image/svg+xml');
   return favicon;
 });
+
+app.route('/whitelist', whitelist);
 
 export const handler = handle(app);
 

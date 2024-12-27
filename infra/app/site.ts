@@ -19,11 +19,28 @@ const configLink = new sst.Linkable('Config', {
   },
 });
 
+const table = new sst.aws.Dynamo('EmailTable', {
+  fields: {
+    pk: 'string',
+    sk: 'string',
+  },
+  primaryIndex: {
+    hashKey: 'pk',
+    rangeKey: 'sk',
+  },
+});
+
+const email = new sst.aws.Email('Email', {
+  sender: config.rootDomainName,
+  dns: sst.aws.dns({
+    zone: zone.id,
+  }),
+});
+
 export const siteFunction = new sst.aws.Function('SiteFunction', {
-  dev: false,
   handler: 'packages/site/src/app.handler',
   url: true,
-  link: [configLink],
+  link: [configLink, email, table],
 });
 
 export const router = new sst.aws.Router('SiteRouter', {

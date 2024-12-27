@@ -20,7 +20,10 @@
     "types": "tsc"
   },
   "dependencies": {
-    "hono": "^4.6.14"
+    "@aws-sdk/client-ses": "^3.716.0",
+    "@minecraft-ondemand/core": "^0.0.0",
+    "hono": "^4.6.14",
+    "tw-to-css": "^0.0.12"
   },
   "devDependencies": {
     "@hono/node-server": "^1.13.7",

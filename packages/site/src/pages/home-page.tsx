@@ -81,14 +81,25 @@ const ServerDetails: FC = (props) => {
 
 const Join: FC = (props) => {
   return (
-    <section
-      id="join"
-      className="mx-auto flex max-w-screen-lg flex-col items-center justify-center gap-4 py-8 text-center"
-    >
-      <h2 className="text-4xl font-bold text-green-800">Join the Server!</h2>
-      <p className="text-xl font-medium text-green-700">
-        Add <span className="font-mono text-green-400">{config.rootDomainName}</span> in your server list.
-      </p>
+    <section id="join" className="mx-auto max-w-screen-lg">
+      <div className="flex flex-col justify-center gap-4 py-8 text-center">
+        <h2 className="text-4xl font-bold text-green-800">Join the Server!</h2>
+        <form action="/whitelist" method="post" className="w-100 flex flex-col gap-4 md:flex-row">
+          <input
+            type="text"
+            name="username"
+            placeholder="Your Minecraft username"
+            className="flex-grow rounded-lg p-4 shadow-lg"
+          />
+          <button type="submit" className="rounded-lg bg-green-800 p-4 font-bold text-white shadow-lg">
+            Join the Server
+          </button>
+        </form>
+        <p className="text-xl font-medium text-green-700">
+          Your request will be reviewed. Add <span className="font-mono text-green-400">{config.rootDomainName}</span>{' '}
+          in your server list.
+        </p>
+      </div>
     </section>
   );
 };

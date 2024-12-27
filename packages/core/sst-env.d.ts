@@ -49,6 +49,7 @@ declare module "sst" {
       "type": "sst.aws.Function"
     }
     "Vpc": {
+      "bastion": string
       "type": "sst.aws.Vpc"
     }
   }

@@ -1,8 +1,11 @@
-import { FC } from 'hono/jsx';
+import { FC, PropsWithChildren } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
+import { Context } from 'hono';
+import { getAuth } from '@hono/oidc-auth';
 import { config } from '#src/lib/config.js';
 
-export const Layout: FC = (props) => {
+export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
+  const auth = await getAuth(props.c);
   return (
     <html>
       <head>
@@ -28,7 +31,7 @@ export const Layout: FC = (props) => {
             }
           `}</Style>
           <script src="/public/components/nav-bar.mjs" type="module"></script>
-          <nav-bar breakpoint="768px" className="mx-auto max-w-screen-lg">
+          <nav-bar breakpoint="864px" className="mx-auto max-w-screen-lg">
             <a className="p-4 text-lg hover:bg-green-700" href="/" slot="left">
               {config.rootDomainName}
             </a>
@@ -41,6 +44,16 @@ export const Layout: FC = (props) => {
             <a className="p-4 text-lg hover:bg-green-700" href="#join" slot="right">
               Join
             </a>
+            {auth !== null ? (
+              <a className="p-4 text-lg hover:bg-green-700" href="/admin" slot="right">
+                Admin
+              </a>
+            ) : null}
+            {auth !== null ? (
+              <a className="p-4 text-lg hover:bg-green-700" href="/logout" slot="right">
+                Logout
+              </a>
+            ) : null}
           </nav-bar>
         </header>
 

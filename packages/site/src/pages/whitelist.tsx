@@ -9,7 +9,6 @@ export const whitelist = factory.createApp();
 whitelist.post('/', async (c) => {
   const body = await c.req.formData();
   const username = body.get('username');
-  console.log(JSON.stringify({ message: 'whitelist request', username }));
   if (typeof username !== 'string' || !username) {
     return c.redirect('/?error=invalid-username#join');
   }

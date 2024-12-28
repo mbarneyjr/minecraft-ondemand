@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.716.0",
+    "@hono/oidc-auth": "^1.2.0",
     "@minecraft-ondemand/core": "^0.0.0",
     "hono": "^4.6.14",
     "tw-to-css": "^0.0.12"

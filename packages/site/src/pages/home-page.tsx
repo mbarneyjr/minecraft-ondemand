@@ -128,7 +128,7 @@ const Join: FC<PropsWithChildren<{ c: Context }>> = (props) => {
 
 export const HomePage: FC<PropsWithChildren<{ c: Context }>> = (props) => {
   return (
-    <Layout>
+    <Layout c={props.c}>
       <Hero />
       <HowItWorks />
       <ServerDetails />

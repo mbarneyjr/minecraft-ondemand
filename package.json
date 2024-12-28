@@ -28,7 +28,6 @@
     "yaml": "^2.6.1"
   },
   "dependencies": {
-    "@pulumi/aws-native": "^1.9.0",
     "cidr-tools": "^11.0.2"
   }
 }

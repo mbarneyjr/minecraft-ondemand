@@ -1,3 +1,4 @@
+import { Resource } from 'sst';
 import { Hono } from 'hono';
 import { FC } from 'hono/jsx';
 import { handle } from 'hono/aws-lambda';
@@ -7,7 +8,6 @@ import { Favicon } from '#src/icons/favicon.js';
 import { AdminPage } from '#src/pages/admin.js';
 import { HomePage } from '#src/pages/home-page.js';
 import { whitelist } from '#src/pages/whitelist.js';
-import { config } from '#src/lib/config.js';
 
 export const app = new Hono();
 
@@ -16,7 +16,7 @@ app.use('*', (c, next) => {
   // since requests go through a cloudfront proxy,
   // we need to correct this so the callback works
   const url = new URL(c.req.url);
-  url.hostname = config.rootDomainName;
+  url.hostname = Resource.Config.rootDomainName;
   c.req.raw = new Request(url.href, c.req.raw);
   return next();
 });

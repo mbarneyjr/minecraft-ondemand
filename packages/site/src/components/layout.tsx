@@ -1,8 +1,8 @@
+import { Resource } from 'sst';
 import { FC, PropsWithChildren } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
 import { Context } from 'hono';
 import { getAuth } from '@hono/oidc-auth';
-import { config } from '#src/lib/config.js';
 
 export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
   const auth = await getAuth(props.c);
@@ -12,10 +12,10 @@ export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <title>{config.rootDomainName}</title>
+        <title>{Resource.Config.rootDomainName}</title>
         <meta
           name="description"
-          content={`This is the landing page for ${config.rootDomainName}, my on-demand Minecraft server.`}
+          content={`This is the landing page for ${Resource.Config.rootDomainName}, my on-demand Minecraft server.`}
         />
         <link rel="icon" type="image/svg" href="/favicon.ico" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -33,7 +33,7 @@ export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
           <script src="/public/components/nav-bar.mjs" type="module"></script>
           <nav-bar breakpoint="864px" className="mx-auto max-w-screen-lg">
             <a className="p-4 text-lg hover:bg-green-700" href="/" slot="left">
-              {config.rootDomainName}
+              {Resource.Config.rootDomainName}
             </a>
             <a className="p-4 text-lg hover:bg-green-700" href="/#how-it-works" slot="right">
               How It Works

@@ -1,7 +1,7 @@
-import { Layout } from '#src/components/layout.js';
 import { FC, PropsWithChildren } from 'hono/jsx';
 import { Context } from 'hono';
 import { getAuth } from '@hono/oidc-auth';
+import { Layout } from '#src/components/layout.js';
 
 export const AdminPage: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
   const auth = await getAuth(props.c);

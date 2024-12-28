@@ -1,8 +1,8 @@
+import { Resource } from 'sst';
 import { FC } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
 import { twi } from 'tw-to-css';
-import { config } from '#src/lib/config.js';
-import { EmailLayout } from './layout.js';
+import { EmailLayout } from '#src/components/email/layout.js';
 
 export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
   return (
@@ -15,7 +15,7 @@ export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
       </div>
       <div className={twi('flex w-full gap-4')} style="gap: 1rem">
         <a
-          href={`https://${config.rootDomainName}/whitelist/approve?username=${props.username}`}
+          href={`https://${Resource.Config.rootDomainName}/whitelist/approve?username=${props.username}`}
           className={twi('m-4 w-full rounded-2xl bg-green-600 p-4 text-center text-lg text-white')}
         >
           Approve

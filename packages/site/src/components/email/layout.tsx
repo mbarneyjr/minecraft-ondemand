@@ -1,7 +1,7 @@
+import { Resource } from 'sst';
 import { FC, PropsWithChildren } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
 import { twi } from 'tw-to-css';
-import { config } from '#src/lib/config.js';
 
 export const EmailLayout: FC<PropsWithChildren<{ subject: string }>> = (props) => {
   return (
@@ -29,8 +29,8 @@ export const EmailLayout: FC<PropsWithChildren<{ subject: string }>> = (props) =
         <footer>
           <div className={twi('bg-green-800 p-4 text-center text-lg text-green-100 shadow-lg')}>
             See more at{' '}
-            <a className={twi('text-yellow-300')} href={`https://${config.rootDomainName}`}>
-              {config.rootDomainName}
+            <a className={twi('text-yellow-300')} href={`https://${Resource.Config.rootDomainName}`}>
+              {Resource.Config.rootDomainName}
             </a>
             .
           </div>

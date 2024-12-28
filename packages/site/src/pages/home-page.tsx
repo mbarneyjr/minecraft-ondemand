@@ -105,7 +105,7 @@ const Join: FC<PropsWithChildren<{ c: Context }>> = (props) => {
             type="text"
             name="username"
             placeholder="Your Minecraft username"
-            className="flex-grow rounded-lg p-4 shadow-lg"
+            className="flex-grow rounded-lg border-2 border-green-300 p-4 shadow-lg"
           />
           <button type="submit" className="rounded-lg bg-green-800 p-4 font-bold text-white shadow-lg">
             Join the Server

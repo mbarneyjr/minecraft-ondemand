@@ -1,6 +1,6 @@
-import { FC } from 'hono/jsx';
+import { FC, PropsWithChildren } from 'hono/jsx';
 
-export const Favicon: FC = (props) => (
+export const Favicon: FC<PropsWithChildren<{ style: string }>> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -9,6 +9,7 @@ export const Favicon: FC = (props) => (
     stroke-width="1"
     stroke-linecap="round"
     stroke-linejoin="round"
+    style={props.style}
   >
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
     <path d="M21 16.008v-8.018a1.98 1.98 0 0 0 -1 -1.717l-7 -4.008a2.016 2.016 0 0 0 -2 0l-7 4.008c-.619 .355 -1 1.01 -1 1.718v8.018c0 .709 .381 1.363 1 1.717l7 4.008c.62 .354 1.38 .354 2 0l7 -4.008c.619 -.355 1 -1.01 1 -1.718z" />

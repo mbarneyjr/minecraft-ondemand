@@ -2,8 +2,9 @@ import { Hono } from 'hono';
 import { FC } from 'hono/jsx';
 import { handle } from 'hono/aws-lambda';
 import { oidcAuthMiddleware, getAuth, revokeSession, processOAuthCallback } from '@hono/oidc-auth';
+import { twi } from 'tw-to-css';
 import { Favicon } from '#src/icons/favicon.js';
-import { AdminPage } from './pages/admin.js';
+import { AdminPage } from '#src/pages/admin.js';
 import { HomePage } from '#src/pages/home-page.js';
 import { whitelist } from '#src/pages/whitelist.js';
 import { config } from '#src/lib/config.js';
@@ -34,7 +35,7 @@ app.get('/oauth2/idresponse', async (c) => {
 });
 
 app.get('/favicon.ico', async (c) => {
-  const favicon = await c.render(<Favicon className="text-green-500" />);
+  const favicon = await c.render(<Favicon style={twi('text-green-500')} />);
   favicon.headers.set('Content-Type', 'image/svg+xml');
   return favicon;
 });

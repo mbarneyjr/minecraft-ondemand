@@ -35,13 +35,13 @@ export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
             <a className="p-4 text-lg hover:bg-green-700" href="/" slot="left">
               {config.rootDomainName}
             </a>
-            <a className="p-4 text-lg hover:bg-green-700" href="#how-it-works" slot="right">
+            <a className="p-4 text-lg hover:bg-green-700" href="/#how-it-works" slot="right">
               How It Works
             </a>
-            <a className="p-4 text-lg hover:bg-green-700" href="#server-details" slot="right">
+            <a className="p-4 text-lg hover:bg-green-700" href="/#server-details" slot="right">
               Server Details
             </a>
-            <a className="p-4 text-lg hover:bg-green-700" href="#join" slot="right">
+            <a className="p-4 text-lg hover:bg-green-700" href="/#join" slot="right">
               Join
             </a>
             {auth !== null ? (

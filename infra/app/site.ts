@@ -37,6 +37,12 @@ export const userPool = new aws.cognito.UserPool('UserPool', {
   },
 });
 
+const userPoolLink = new sst.Linkable('UserPoolLink', {
+  properties: {
+    userPoolId: userPool.id,
+  },
+});
+
 export const userPoolDomain = new aws.cognito.UserPoolDomain('UserPoolDomain', {
   userPoolId: userPool.id,
   domain: $interpolate`${$app.name}-${$app.stage}`,
@@ -51,6 +57,12 @@ export const appClient = new aws.cognito.UserPoolClient('AppClient', {
   allowedOauthFlows: ['code'],
   allowedOauthScopes: ['openid'],
   generateSecret: true,
+});
+
+const appClientLink = new sst.Linkable('AppClientLink', {
+  properties: {
+    clientId: appClient.id,
+  },
 });
 
 const table = new sst.aws.Dynamo('EmailTable', {

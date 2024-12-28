@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minecraft-ondemand/intui",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.mjs": "./*.mjs"
+  },
+  "exports": {
+    "./*": {
+      "import": "./src/*.mjs"
+    }
+  },
+  "scripts": {
+    "start": "node --import tsx ./src/main.tsx",
+    "types": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.716.0",
+    "@minecraft-ondemand/core": "^0.0.0",
+    "hono": "^4.6.14",
+    "tw-to-css": "^0.0.12"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@types/node": "^22.10.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "tsx": "^4.19.2"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  }
+}

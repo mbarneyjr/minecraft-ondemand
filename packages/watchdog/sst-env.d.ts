@@ -6,6 +6,10 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "AppClientLink": {
+      "clientId": string
+      "type": "sst.sst.Linkable"
+    }
     "Config": {
       "rootDomainName": string
       "type": "sst.sst.Linkable"
@@ -43,6 +47,10 @@ declare module "sst" {
     "TargetRegion": {
       "name": string
       "type": "sst.sst.Linkable"
+    }
+    "UserPoolLink": {
+      "type": "sst.sst.Linkable"
+      "userPoolId": string
     }
     "VanillaAddFileLambda": {
       "name": string

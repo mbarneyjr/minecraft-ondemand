@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { FC } from 'hono/jsx';
 import { handle } from 'hono/aws-lambda';
-import { oidcAuthMiddleware, getAuth, revokeSession, processOAuthCallback } from '@hono/oidc-auth';
+import { oidcAuthMiddleware, revokeSession, processOAuthCallback } from '@hono/oidc-auth';
 import { twi } from 'tw-to-css';
 import { Favicon } from '#src/icons/favicon.js';
 import { AdminPage } from '#src/pages/admin.js';

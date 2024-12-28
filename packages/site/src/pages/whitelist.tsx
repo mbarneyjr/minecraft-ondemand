@@ -1,4 +1,6 @@
+import qs from 'querystring';
 import { createFactory } from 'hono/factory';
+import { oidcAuthMiddleware } from '@hono/oidc-auth';
 import { Email } from '@minecraft-ondemand/core/email';
 import { WhitelistRequestEmail } from '#src/components/email/whitelist-request.js';
 
@@ -24,4 +26,13 @@ whitelist.post('/', async (c) => {
     body: content,
   });
   return c.redirect('/?success=request-sent#join');
+});
+
+whitelist.get('/approve', oidcAuthMiddleware(), async (c) => {
+  const username = c.req.query('username');
+  if (!username) {
+    return c.redirect(`/?${qs.stringify({ error: 'no username specified' })}`);
+  }
+  // todo
+  return c.redirect(`/?${qs.stringify({ success: 'user whitelisted' })}`);
 });

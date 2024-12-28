@@ -13,21 +13,14 @@ export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
       <div className={twi('p-4 font-mono text-2xl')}>
         <p className={twi('bg-green-100 p-4 text-center text-green-600')}>{props.username}</p>
       </div>
-      {/* TODO: add support for approving/rejecting requests through email */}
-      {/* <div className={twi('flex w-full gap-4')} style="gap: 1rem"> */}
-      {/*   <a */}
-      {/*     href={`https://${config.rootDomainName}/whitelist/approve?username=${props.username}`} */}
-      {/*     className={twi('m-4 w-full rounded-2xl bg-green-600 p-4 text-center text-lg text-white')} */}
-      {/*   > */}
-      {/*     Approve */}
-      {/*   </a> */}
-      {/*   <a */}
-      {/*     href={`https://${config.rootDomainName}/whitelist/reject?username=${props.username}`} */}
-      {/*     className={twi('m-4 w-full rounded-2xl bg-red-600 p-4 text-center text-lg text-white')} */}
-      {/*   > */}
-      {/*     Reject */}
-      {/*   </a> */}
-      {/* </div> */}
+      <div className={twi('flex w-full gap-4')} style="gap: 1rem">
+        <a
+          href={`https://${config.rootDomainName}/whitelist/approve?username=${props.username}`}
+          className={twi('m-4 w-full rounded-2xl bg-green-600 p-4 text-center text-lg text-white')}
+        >
+          Approve
+        </a>
+      </div>
     </EmailLayout>
   );
 };

@@ -110,11 +110,3 @@ export const router = new sst.aws.Router('SiteRouter', {
     '/*': siteFunction.url,
   },
 });
-
-new sst.x.DevCommand('SiteDev', {
-  dev: {
-    directory: 'packages/site',
-    command: 'npm run dev',
-  },
-  link: [configLink],
-});

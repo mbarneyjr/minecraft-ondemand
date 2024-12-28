@@ -15,8 +15,6 @@
     }
   },
   "scripts": {
-    "dev": "npm run serve",
-    "serve": "node --watch --watch-path . --import tsx ./src/app.tsx",
     "types": "tsc"
   },
   "dependencies": {

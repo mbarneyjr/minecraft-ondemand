@@ -8,7 +8,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "sst dev",
+    "dev": "SST_DEV=true sst dev",
     "infra:diff": "sst diff",
     "infra:deploy": "sst deploy",
     "infra:remove": "sst remove",

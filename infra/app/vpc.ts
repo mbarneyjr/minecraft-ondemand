@@ -4,7 +4,7 @@ import { config } from './config';
 const subnets = getSubnets(config.cidrBlock, 24);
 
 export const vpc = new sst.aws.Vpc('Vpc', {
-  bastion: true,
+  bastion: process.env.SST_DEV === 'true',
   transform: {
     bastionInstance: {
       instanceType: 't4g.nano',

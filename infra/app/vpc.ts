@@ -19,6 +19,21 @@ export const vpc = new sst.aws.Vpc('Vpc', {
       ipv6CidrBlock: config.ipv6CidrBlock,
       ipv6IpamPoolId: config.ipv6IpamPoolId,
     },
+    securityGroup: (args, _, name) => {
+      if (args.egress) {
+        args.egress = $util.output(args.egress).apply((egress) => {
+          return [
+            ...egress,
+            {
+              fromPort: 0,
+              toPort: 0,
+              protocol: '-1',
+              ipv6CidrBlocks: ['::/0'],
+            },
+          ];
+        });
+      }
+    },
     publicSubnet: (args, opts, name) => {
       const index = parseInt(name.split('PublicSubnet')[1], 10);
       args.cidrBlock = subnets[index];
@@ -31,6 +46,34 @@ export const vpc = new sst.aws.Vpc('Vpc', {
       args.ipv6CidrBlock = ipv6Subnets[ipv6Subnets.length - index];
       args.assignIpv6AddressOnCreation = true;
     },
+    publicRouteTable: (args, _, name) => {
+      const index = parseInt(name.split('PublicRouteTable')[1], 10);
+      if (args.routes) {
+        args.routes = $util.output(args.routes).apply((routes) => {
+          return [
+            ...routes,
+            {
+              ipv6CidrBlock: '::/0',
+              egressOnlyGatewayId: $util.output(egressOnlyIgw.id),
+            },
+          ];
+        });
+      }
+    },
+    privateRouteTable: (args, _, name) => {
+      const index = parseInt(name.split('PrivateRouteTable')[1], 10);
+      if (args.routes) {
+        args.routes = $util.output(args.routes).apply((routes) => {
+          return [
+            ...routes,
+            {
+              ipv6CidrBlock: '::/0',
+              egressOnlyGatewayId: $util.output(egressOnlyIgw.id),
+            },
+          ];
+        });
+      }
+    },
   },
 });
 
@@ -39,33 +82,6 @@ const egressOnlyIgw = new aws.ec2.EgressOnlyInternetGateway('EgressOnlyIgw', {
   tags: {
     Name: $interpolate`${$app.name}-${$app.stage}`,
   },
-});
-new aws.ec2.SecurityGroupRule('Ipv6EgressAll', {
-  type: 'egress',
-  securityGroupId: vpc.nodes.securityGroup.id,
-  fromPort: -1,
-  toPort: -1,
-  protocol: '-1',
-  ipv6CidrBlocks: ['::/0'],
-});
-
-$util.all([vpc.nodes.privateRouteTables]).apply(([routeTables]) => {
-  for (let i = 0; i < routeTables.length; i++) {
-    new aws.ec2.Route(`EgressOnlyIgwRoutePrivate${i}`, {
-      destinationIpv6CidrBlock: '::/0',
-      egressOnlyGatewayId: egressOnlyIgw.id,
-      routeTableId: routeTables[i].id,
-    });
-  }
-});
-$util.all([vpc.nodes.publicRouteTables]).apply(([routeTables]) => {
-  for (let i = 0; i < routeTables.length; i++) {
-    new aws.ec2.Route(`IgwRoutePublic${i}`, {
-      destinationIpv6CidrBlock: '::/0',
-      gatewayId: vpc.nodes.internetGateway.id,
-      routeTableId: routeTables[i].id,
-    });
-  }
 });
 
 new aws.ec2transitgateway.InstanceState('BastionState', {

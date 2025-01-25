@@ -19,7 +19,7 @@ whitelist.post('/', async (c) => {
   const content = (await email.text()).replace(/class=/g, 'style=');
   const adminEmails = await Email.listAdminEmails();
   if (!adminEmails.length) {
-    return c.redirect('/error=no-admin-emails#join');
+    return c.redirect('/?error=no-admin-emails#join');
   }
   await Email.sendEmail({
     destinations: adminEmails,

@@ -14,6 +14,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
     }
+    "Ipv6Proxy": {
+      "domainName": string
+      "type": "sst.sst.Linkable"
+    }
     "MountTargetIp": {
       "ip": string
       "type": "sst.sst.Linkable"
@@ -40,6 +44,7 @@ declare module "sst" {
       "type": "sst.aws.Function"
     }
     "Vpc": {
+      "bastion": string
       "type": "sst.aws.Vpc"
     }
   }

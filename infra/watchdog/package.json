@@ -12,6 +12,6 @@
   "description": "",
   "devDependencies": {
     "@pulumi/docker-build": "^0.0.8",
-    "sst": "^3.4.3"
+    "sst": "3.4.54"
   }
 }

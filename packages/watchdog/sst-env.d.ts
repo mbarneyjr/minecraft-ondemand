@@ -6,6 +6,10 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "AppClientLink": {
+      "clientId": string
+      "type": "sst.sst.Linkable"
+    }
     "Config": {
       "rootDomainName": string
       "type": "sst.sst.Linkable"
@@ -14,12 +18,34 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
     }
+    "Email": {
+      "configSet": string
+      "sender": string
+      "type": "sst.aws.Email"
+    }
+    "EmailTable": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "Ipv6Proxy": {
       "domainName": string
       "type": "sst.sst.Linkable"
     }
+    "MountPath": {
+      "path": string
+      "type": "sst.sst.Linkable"
+    }
     "MountTargetIp": {
       "ip": string
+      "type": "sst.sst.Linkable"
+    }
+    "Oidc": {
+      "authSecret": string
+      "clientId": string
+      "clientSecret": string
+      "issuer": string
+      "redirectUri": string
+      "scopes": string
       "type": "sst.sst.Linkable"
     }
     "SiteFunction": {
@@ -38,6 +64,10 @@ declare module "sst" {
     "TargetRegion": {
       "name": string
       "type": "sst.sst.Linkable"
+    }
+    "UserPoolLink": {
+      "type": "sst.sst.Linkable"
+      "userPoolId": string
     }
     "VanillaAddFileLambda": {
       "name": string

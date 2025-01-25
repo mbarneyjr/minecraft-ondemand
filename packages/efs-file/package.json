@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "imports": {
-    "#*.mjs": "./*.mjs"
+    "#*.js": "./*.js"
   },
   "exports": {
     "./*": {
-      "import": "./src/*.mjs"
+      "import": "./src/*.js"
     },
     ".": {
-      "import": "./src/index.mjs"
+      "import": "./src/index.js"
     }
   },
   "scripts": {

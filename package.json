@@ -21,14 +21,11 @@
   "devDependencies": {
     "@pulumi/pulumi": "^3.142.0",
     "@types/aws-lambda": "8.10.145",
+    "ip6": "^0.2.11",
     "mime": "^4.0.6",
     "prettier": "^3.4.2",
-    "sst": "3.3.71",
+    "sst": "3.4.54",
     "typescript": "^5.7.2",
     "yaml": "^2.6.1"
-  },
-  "dependencies": {
-    "@pulumi/aws-native": "^1.9.0",
-    "cidr-tools": "^11.0.2"
   }
 }

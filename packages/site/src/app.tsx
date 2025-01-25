@@ -1,44 +1,44 @@
-import { fileURLToPath } from 'url';
+import { Resource } from 'sst';
 import { Hono } from 'hono';
-import type { FC } from 'hono/jsx';
-import { handle } from 'hono/aws-lambda';
-import { HomePage } from './pages/home-page.js';
-import { Favicon } from './icons/favicon.js';
+import { FC } from 'hono/jsx';
+import { handle, LambdaContext, LambdaEvent } from 'hono/aws-lambda';
+import { twi } from 'tw-to-css';
+import { Favicon } from '#src/icons/favicon.js';
+import { admin } from '#src/pages/admin.js';
+import { HomePage } from '#src/pages/home-page.js';
+import { whitelist } from '#src/pages/whitelist.js';
+import { authMiddleware, installAuthRoutes } from './middleware/oidc.js';
 
 export const app = new Hono();
 
-app.get('/', (c) => {
-  return c.html(<HomePage />);
+app.use('*', (c, next) => {
+  // @hono/oidc-auth uses the request url in the state
+  // since requests go through a cloudfront proxy,
+  // we need to correct this so the callback works
+  const url = new URL(c.req.url);
+  url.hostname = Resource.Config.rootDomainName;
+  c.req.raw = new Request(url.href, c.req.raw);
+  return next();
 });
 
+app.use('*', authMiddleware);
+installAuthRoutes(app);
 app.get('/favicon.ico', async (c) => {
-  const favicon = await c.render(<Favicon className="text-green-500" />);
+  const favicon = await c.render(<Favicon style={twi('text-green-500')} />);
   favicon.headers.set('Content-Type', 'image/svg+xml');
   return favicon;
 });
+app.get('/', async (c) => {
+  return c.html(<HomePage c={c} />);
+});
 
-export const handler = handle(app);
+app.route('/admin', admin);
+app.route('/whitelist', whitelist);
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const fs = await import('fs');
-  const { join } = await import('path');
-  const url = await import('url');
-  const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-  app.use(
-    (await import('hono/serve-static')).serveStatic({
-      root: join(__dirname, 'public'),
-      rewriteRequestPath: (path) => path.replace(/^\/public/, ''),
-      getContent: async (path) => {
-        console.log('GET static assets', path);
-        try {
-          return fs.readFileSync(path, 'utf-8');
-        } catch (e) {
-          return null;
-        }
-      },
-    }),
-  );
-  (await import('@hono/node-server')).serve(app, (info) => {
-    console.log(`Listening on http://localhost:${info.port}`);
-  });
+export const honoHandler = handle(app);
+export async function handler(event: LambdaEvent, context: LambdaContext) {
+  console.log('Event', JSON.stringify(event));
+  const response = await honoHandler(event, context);
+  console.log('Response', JSON.stringify(response));
+  return response;
 }

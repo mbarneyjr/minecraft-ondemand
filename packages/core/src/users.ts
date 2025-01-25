@@ -1,0 +1,24 @@
+import { CognitoIdentityProvider, AdminCreateUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { Resource } from 'sst';
+
+export class Users {
+  static #cognitoIdp: CognitoIdentityProvider | null = null;
+
+  static cognitoIdp(): CognitoIdentityProvider {
+    if (!Users.#cognitoIdp) {
+      Users.#cognitoIdp = new CognitoIdentityProvider({
+        useDualstackEndpoint: true,
+      });
+    }
+    return Users.#cognitoIdp;
+  }
+
+  static async createAdminUser(email: string) {
+    await Users.cognitoIdp().send(
+      new AdminCreateUserCommand({
+        Username: email,
+        UserPoolId: Resource.UserPoolLink.userPoolId,
+      }),
+    );
+  }
+}

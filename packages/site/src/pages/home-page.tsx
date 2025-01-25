@@ -1,18 +1,21 @@
+import { Resource } from 'sst';
+import { FC, PropsWithChildren } from 'hono/jsx';
+import { Context } from 'hono';
 import { Layout } from '#src/components/layout.js';
-import { FC } from 'hono/jsx';
 import { ServerIcon } from '#src/icons/server.js';
 import { RefreshIcon } from '#src/icons/refresh.js';
 import { StopwatchIcon } from '#src/icons/stopwatch.js';
 import { BlocksIcon } from '#src/icons/blocks.js';
 import { SwordsIcon } from '#src/icons/swords.js';
 import { ShieldIcon } from '#src/icons/shield.js';
-import { config } from '#src/lib/config.js';
+import { SuccessIcon } from '#src/icons/success.js';
+import { ErrorIcon } from '#src/icons/error.js';
 
 const Hero: FC = (props) => {
   return (
     <section className="mx-auto flex min-h-64 flex-col items-center justify-center bg-gradient-to-b from-green-600 to-green-400 text-center text-white">
       <h1 className="font-green-100 py-8 text-4xl font-bold">
-        Welcome to <span className="text-yellow-300">{config.rootDomainName}</span>
+        Welcome to <span className="text-yellow-300">{Resource.Config.rootDomainName}</span>
       </h1>
       <p className="py-8">My on-demand Minecraft server</p>
     </section>
@@ -79,27 +82,57 @@ const ServerDetails: FC = (props) => {
   );
 };
 
-const Join: FC = (props) => {
+const Join: FC<PropsWithChildren<{ c: Context }>> = (props) => {
+  const { error, success } = props.c.req.query();
+  const icon =
+    error !== undefined ? (
+      <ErrorIcon className="inline h-6 w-6 text-red-800" />
+    ) : (
+      <SuccessIcon className="inline h-6 w-6 text-green-800" />
+    );
+  const messageStyles = error !== undefined ? 'text-red-800 bg-red-200' : 'text-green-800 bg-green-200';
+  const message = {
+    'invalid-username': 'Invalid username. Please try again.',
+    'no-admin-emails': 'There are no administrators for this server to approve your request.',
+    'request-sent': 'Your request has been sent!',
+  }[(error || success) ?? ''];
   return (
-    <section
-      id="join"
-      className="mx-auto flex max-w-screen-lg flex-col items-center justify-center gap-4 py-8 text-center"
-    >
-      <h2 className="text-4xl font-bold text-green-800">Join the Server!</h2>
-      <p className="text-xl font-medium text-green-700">
-        Add <span className="font-mono text-green-400">{config.rootDomainName}</span> in your server list.
-      </p>
+    <section id="join" className="mx-auto max-w-screen-lg">
+      <div className="flex flex-col justify-center gap-4 py-8 text-center">
+        <h2 className="text-4xl font-bold text-green-800">Join the Server!</h2>
+        <form action="/whitelist" method="post" className="w-100 flex flex-col gap-4 md:flex-row">
+          <input
+            type="text"
+            name="username"
+            placeholder="Your Minecraft username"
+            className="flex-grow rounded-lg border-2 border-green-300 p-4 shadow-lg"
+          />
+          <button type="submit" className="rounded-lg bg-green-800 p-4 font-bold text-white shadow-lg">
+            Join the Server
+          </button>
+        </form>
+        <p className="text-xl font-medium text-green-700">
+          Your request will be reviewed. Add{' '}
+          <span className="font-mono text-green-400">{Resource.Config.rootDomainName}</span> in your server list.
+        </p>
+        {message !== undefined ? (
+          <div className={`${messageStyles} flex items-center justify-center gap-1 p-4`}>
+            {icon}
+            <p className={''}>{message}</p>
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 };
 
-export const HomePage: FC = (props) => {
+export const HomePage: FC<PropsWithChildren<{ c: Context }>> = (props) => {
   return (
-    <Layout>
+    <Layout c={props.c}>
       <Hero />
       <HowItWorks />
       <ServerDetails />
-      <Join />
+      <Join c={props.c} />
     </Layout>
   );
 };

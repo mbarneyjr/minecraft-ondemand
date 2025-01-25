@@ -1,27 +1,26 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@minecraft-ondemand/dns-trigger",
+  "name": "@minecraft-ondemand/core",
   "version": "0.0.0",
   "type": "module",
   "imports": {
-    "#*.js": "./*.js"
+    "#*.mjs": "./*.js"
   },
   "exports": {
     "./*": {
       "import": "./src/*.js"
-    },
-    ".": {
-      "import": "./src/index.js"
     }
   },
   "scripts": {
     "types": "tsc"
   },
   "dependencies": {
-    "@aws-sdk/client-ecs": "^3.709.0",
-    "@aws-sdk/client-ssm": "^3.712.0"
+    "@aws-sdk/client-cognito-identity-provider": "^3.716.0",
+    "@aws-sdk/client-dynamodb": "^3.716.0",
+    "@aws-sdk/client-ses": "^3.716.0",
+    "@aws-sdk/lib-dynamodb": "^3.716.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.146"
+    "@types/node": "^22.10.2"
   }
 }

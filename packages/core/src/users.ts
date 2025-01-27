@@ -6,9 +6,7 @@ export class Users {
 
   static cognitoIdp(): CognitoIdentityProvider {
     if (!Users.#cognitoIdp) {
-      Users.#cognitoIdp = new CognitoIdentityProvider({
-        useDualstackEndpoint: true,
-      });
+      Users.#cognitoIdp = new CognitoIdentityProvider();
     }
     return Users.#cognitoIdp;
   }

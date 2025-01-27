@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import YAML from 'yaml';
 import { containerDefinitions } from '../container-definition';
 import { config, providers } from '../../config';
+import { identity, region } from '../../data';
 
 type MinecraftServiceArgs = {
   id: string;
@@ -16,9 +17,6 @@ type MinecraftServiceArgs = {
   memory: number;
   environmentConfig: Record<string, string | undefined>;
 };
-
-const region = await aws.getRegion();
-const identity = await aws.getCallerIdentity();
 
 export class MinecraftService {
   resourceName: string;

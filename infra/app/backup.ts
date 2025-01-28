@@ -1,4 +1,4 @@
-import { rootAccessPoint } from './efs';
+import { fileSystem, rootAccessPoint } from './efs';
 import { vpc } from './vpc';
 import { region, identity } from './data';
 
@@ -12,6 +12,32 @@ new aws.s3.BucketOwnershipControls('Backup', {
   bucket: backupBucket.bucket,
   rule: {
     objectOwnership: 'BucketOwnerEnforced',
+  },
+});
+
+const datasyncLogs = new aws.cloudwatch.LogGroup('Datasync', {
+  name: $interpolate`/aws/vendedlogs/datasync/${$app.name}-${$app.stage}`,
+});
+
+const datasyncLogsResourcePolicy = new aws.cloudwatch.LogResourcePolicy('Datasync', {
+  policyName: $interpolate`${$app.name}-${$app.stage}-datasync`,
+  policyDocument: {
+    Version: '2012-10-17',
+    Statement: [
+      {
+        Effect: 'Allow',
+        Principal: {
+          Service: 'datasync.amazonaws.com',
+        },
+        Action: ['logs:CreateLogStream', 'logs:PutLogEvents'],
+        Resource: $interpolate`${datasyncLogs.arn}:*`,
+        Condition: {
+          StringEquals: {
+            'aws:SourceAccount': identity.accountId,
+          },
+        },
+      },
+    ],
   },
 });
 
@@ -33,14 +59,14 @@ const datasyncRole = new aws.iam.Role('DataSyncRole', {
   inlinePolicies: [
     {
       name: 'datasync',
-      policy: backupBucket.arn.apply((arn) =>
+      policy: $util.all([backupBucket.arn, datasyncLogs.arn]).apply(([backupBucketArn, logGroupArn]) =>
         JSON.stringify({
           Version: '2012-10-17',
           Statement: [
             {
               Effect: 'Allow',
               Action: ['s3:GetBucketLocation', 's3:ListBucket', 's3:ListBucketMultipartUploads', 's3:HeadBucket'],
-              Resource: arn,
+              Resource: backupBucketArn,
             },
             {
               Effect: 'Allow',
@@ -51,7 +77,12 @@ const datasyncRole = new aws.iam.Role('DataSyncRole', {
                 's3:ListMultipartUploadParts',
                 's3:PutObject',
               ],
-              Resource: `${arn}/*`,
+              Resource: `${backupBucketArn}/*`,
+            },
+            {
+              Effect: 'Allow',
+              Action: ['logs:PutLogEvents', 'logs:CreateLogStream'],
+              Resource: `${logGroupArn}:*`,
             },
           ],
         }),
@@ -66,12 +97,13 @@ const s3Location = new aws.datasync.S3Location('S3Location', {
   s3Config: {
     bucketAccessRoleArn: datasyncRole.arn,
   },
-  subdirectory: '/efs',
+  subdirectory: '/',
 });
 
 const securityGroupArns = $util.output(vpc.securityGroups).apply((sgs) => {
   return sgs.map((sg) => $interpolate`arn:aws:ec2:${region.name}:${identity.accountId}:security-group/${sg}`);
 });
+// todo create locations per MinecraftService, cannot write to the root of the FS
 const efsLocation = new aws.datasync.EfsLocation('EfsLocation', {
   accessPointArn: rootAccessPoint.arn,
   subdirectory: '/',
@@ -81,13 +113,9 @@ const efsLocation = new aws.datasync.EfsLocation('EfsLocation', {
       .apply((subnetId) => `arn:aws:ec2:${region.name}:${identity.accountId}:subnet/${subnetId}`),
     securityGroupArns,
   },
-  efsFileSystemArn: rootAccessPoint.fileSystemArn,
+  efsFileSystemArn: fileSystem.arn,
   fileSystemAccessRoleArn: datasyncRole.arn,
   inTransitEncryption: 'TLS1_2',
-});
-
-const datasyncLogs = new aws.cloudwatch.LogGroup('Datasync', {
-  name: $interpolate`/aws/vendedlogs/datasync/${$app.name}-${$app.stage}`,
 });
 
 const backupTask = new aws.datasync.Task('Backup', {

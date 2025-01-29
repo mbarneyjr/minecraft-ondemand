@@ -4,6 +4,8 @@ import YAML from 'yaml';
 import { containerDefinitions } from '../container-definition';
 import { config, providers } from '../../config';
 import { identity, region } from '../../data';
+import { backupBucket, datasyncLogs, datasyncRole } from '../../backup';
+import { vpc } from '../../vpc';
 
 type MinecraftServiceArgs = {
   id: string;
@@ -16,6 +18,7 @@ type MinecraftServiceArgs = {
   cpu: number;
   memory: number;
   environmentConfig: Record<string, string | undefined>;
+  backup: boolean;
 };
 
 export class MinecraftService {
@@ -63,6 +66,12 @@ export class MinecraftService {
     this.addFileLambda = this.#createAddFileLambda(name, args, {
       accessPoint: this.accessPoint,
     });
+    if (args.backup) {
+      this.#createBackup(name, args, {
+        serviceName,
+        accessPoint: this.accessPoint,
+      });
+    }
   }
 
   addFile(path: string, data: $util.Input<string>) {
@@ -365,5 +374,66 @@ export class MinecraftService {
       executionRole,
       taskRole,
     };
+  }
+
+  #createBackup(
+    name: string,
+    args: MinecraftServiceArgs,
+    options: {
+      serviceName: string;
+      accessPoint: aws.efs.AccessPoint;
+    },
+  ) {
+    const s3Location = new aws.datasync.S3Location(`${name}S3Location`, {
+      s3BucketArn: backupBucket.arn,
+      s3StorageClass: 'STANDARD',
+      s3Config: {
+        bucketAccessRoleArn: datasyncRole.arn,
+      },
+      subdirectory: `/${args.id}`,
+    });
+
+    const securityGroupArns = $util.output(vpc.securityGroups).apply((sgs) => {
+      return sgs.map((sg) => $interpolate`arn:aws:ec2:${region.name}:${identity.accountId}:security-group/${sg}`);
+    });
+
+    const efsLocation = new aws.datasync.EfsLocation(`${name}EfsLocation`, {
+      accessPointArn: options.accessPoint.arn,
+      subdirectory: '/',
+      ec2Config: {
+        subnetArn: $util
+          .output(vpc.privateSubnets[0])
+          .apply((subnetId) => `arn:aws:ec2:${region.name}:${identity.accountId}:subnet/${subnetId}`),
+        securityGroupArns,
+      },
+      efsFileSystemArn: options.accessPoint.fileSystemArn,
+      fileSystemAccessRoleArn: datasyncRole.arn,
+      inTransitEncryption: 'TLS1_2',
+    });
+
+    const backupTask = new aws.datasync.Task(`${name}Backup`, {
+      name: $interpolate`${options.serviceName}-backup`,
+      sourceLocationArn: efsLocation.arn,
+      destinationLocationArn: s3Location.arn,
+      cloudwatchLogGroupArn: datasyncLogs.arn,
+      schedule: {
+        scheduleExpression: 'cron(0 0 ? * SUN *)',
+      },
+      options: {
+        preserveDeletedFiles: 'REMOVE',
+        logLevel: 'TRANSFER',
+      },
+    });
+
+    const restoreTask = new aws.datasync.Task(`${name}Restore`, {
+      name: $interpolate`${options.serviceName}-restore`,
+      sourceLocationArn: s3Location.arn,
+      destinationLocationArn: efsLocation.arn,
+      cloudwatchLogGroupArn: datasyncLogs.arn,
+      options: {
+        preserveDeletedFiles: 'REMOVE',
+        logLevel: 'TRANSFER',
+      },
+    });
   }
 }

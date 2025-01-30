@@ -61,7 +61,7 @@ const defaultConfig: Config = {
   memory: 16 * 1024,
   motd: 'Minecraft On-Demand',
   ops: ['Lexicham', 'Lexicam'],
-  watchdogImage: '512329539140.dkr.ecr.us-east-2.amazonaws.com/minecraft-ondemand-watchdog:0.0.0',
+  watchdogImage: '512329539140.dkr.ecr.us-east-2.amazonaws.com/minecraft-ondemand-watchdog:0.0.1',
   hostedZoneName: process.env.HOSTED_ZONE_NAME ?? `dev.${baseDomainName}`,
   rootDomainName: process.env.DOMAIN_NAME ?? `${$app.stage}.dev.${baseDomainName}`,
 };

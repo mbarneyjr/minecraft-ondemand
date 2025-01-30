@@ -4,6 +4,7 @@
 
 [ -n "$CLUSTER" ] || { echo "CLUSTER env variable must be set to the name of the ECS cluster" ; exit 1; }
 [ -n "$SERVICE" ] || { echo "SERVICE env variable must be set to the name of the service in the $CLUSTER cluster" ; exit 1; }
+[ -n "$SERVICE_ID" ] || { echo "SERVICE_ID env variable must be set to the name of the service in the $CLUSTER cluster" ; exit 1; }
 [ -n "$SERVERNAME" ] || { echo "SERVERNAME env variable must be set to the full A record in Route53 we are updating" ; exit 1; }
 [ -n "$DNSZONE" ] || { echo "DNSZONE env variable must be set to the Route53 Hosted Zone ID" ; exit 1; }
 [ -n "$STARTUPMIN" ] || { echo "STARTUPMIN env variable not set, defaulting to a 10 minute startup wait" ; STARTUPMIN=10; }
@@ -158,7 +159,7 @@ do
       "CloudWatchMetrics": [
         {
           "Namespace": "Minecraft",
-          "Dimensions": [["'${SERVICE}'"]],
+          "Dimensions": [["'${SERVICE_ID}'"]],
           "Metrics": [
             {
               "Name": "Connections",

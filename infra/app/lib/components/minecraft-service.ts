@@ -206,6 +206,7 @@ export class MinecraftService {
           environment: {
             CLUSTER: args.cluster.name,
             SERVICE: options.serviceName,
+            SERVICE_ID: args.id,
             SERVERNAME: args.domainName,
             DNSZONE: args.hostedZone.id,
             STARTUPMIN: '10',

@@ -29,7 +29,7 @@ export const rootAccessPoint = new aws.efs.AccessPoint('RootAccessPoint', {
     creationInfo: {
       ownerUid: 1000,
       ownerGid: 1000,
-      permissions: '777',
+      permissions: '0777',
     },
   },
 });

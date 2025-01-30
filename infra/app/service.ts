@@ -44,4 +44,5 @@ export const vanillaService = new MinecraftService('Vanilla', {
   vpc,
   fileSystem,
   cluster,
+  backup: true,
 });

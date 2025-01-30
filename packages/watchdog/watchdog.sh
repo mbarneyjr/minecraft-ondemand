@@ -4,6 +4,7 @@
 
 [ -n "$CLUSTER" ] || { echo "CLUSTER env variable must be set to the name of the ECS cluster" ; exit 1; }
 [ -n "$SERVICE" ] || { echo "SERVICE env variable must be set to the name of the service in the $CLUSTER cluster" ; exit 1; }
+[ -n "$SERVICE_ID" ] || { echo "SERVICE_ID env variable must be set to the name of the service in the $CLUSTER cluster" ; exit 1; }
 [ -n "$SERVERNAME" ] || { echo "SERVERNAME env variable must be set to the full A record in Route53 we are updating" ; exit 1; }
 [ -n "$DNSZONE" ] || { echo "DNSZONE env variable must be set to the Route53 Hosted Zone ID" ; exit 1; }
 [ -n "$STARTUPMIN" ] || { echo "STARTUPMIN env variable not set, defaulting to a 10 minute startup wait" ; STARTUPMIN=10; }
@@ -150,6 +151,28 @@ do
   [ "$EDITION" == "java" ] && CONNECTIONS=$(netstat -atn | grep :25565 | grep ESTABLISHED | wc -l)
   [ "$EDITION" == "bedrock" ] && CONNECTIONS=$((echo -en "$BEDROCKPING" && sleep 1) | ncat -w 1 -u 127.0.0.1 19132 | cut -c34- | awk -F\; '{ print $5 }')
   [ -n "$CONNECTIONS" ] || CONNECTIONS=0
+  # emit cloudwatch embedded format for connections
+  TIMESTAMP=$(date +%s%N | cut -b1-13)
+  echo '{
+    "_aws": {
+      "Timestamp": '${TIMESTAMP}',
+      "CloudWatchMetrics": [
+        {
+          "Namespace": "Minecraft",
+          "Dimensions": [["ServiceId"]],
+          "Metrics": [
+            {
+              "Name": "Connections",
+              "Unit": "Count",
+              "StorageResolution": 60
+            }
+          ]
+        }
+      ]
+    },
+    "Connections": '${CONNECTIONS}',
+    "ServiceId": "'${SERVICE_ID}'"
+  }' | jq -c .
   if [ $CONNECTIONS -lt 1 ]
   then
     echo "No active connections detected, $COUNTER out of $SHUTDOWNMIN minutes..."

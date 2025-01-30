@@ -159,7 +159,7 @@ do
       "CloudWatchMetrics": [
         {
           "Namespace": "Minecraft",
-          "Dimensions": [["'${SERVICE_ID}'"]],
+          "Dimensions": [["ServiceId"]],
           "Metrics": [
             {
               "Name": "Connections",
@@ -170,7 +170,8 @@ do
         }
       ]
     },
-    "Connections": '${CONNECTIONS}'
+    "Connections": '${CONNECTIONS}',
+    "ServiceId": "'${SERVICE_ID}'"
   }' | jq -c .
   if [ $CONNECTIONS -lt 1 ]
   then

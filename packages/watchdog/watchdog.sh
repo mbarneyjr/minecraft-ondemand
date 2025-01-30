@@ -169,8 +169,8 @@ do
         }
       ]
     },
-    "Connections": '${CONNECTIONS}',
-  }'
+    "Connections": '${CONNECTIONS}'
+  }' | jq -c .
   if [ $CONNECTIONS -lt 1 ]
   then
     echo "No active connections detected, $COUNTER out of $SHUTDOWNMIN minutes..."

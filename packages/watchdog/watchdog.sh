@@ -150,6 +150,27 @@ do
   [ "$EDITION" == "java" ] && CONNECTIONS=$(netstat -atn | grep :25565 | grep ESTABLISHED | wc -l)
   [ "$EDITION" == "bedrock" ] && CONNECTIONS=$((echo -en "$BEDROCKPING" && sleep 1) | ncat -w 1 -u 127.0.0.1 19132 | cut -c34- | awk -F\; '{ print $5 }')
   [ -n "$CONNECTIONS" ] || CONNECTIONS=0
+  # emit cloudwatch embedded format for connections
+  TIMESTAMP=$(date +%s%N | cut -b1-13)
+  echo '{
+    "_aws": {
+      "Timestamp": '${TIMESTAMP}',
+      "CloudWatchMetrics": [
+        {
+          "Namespace": "Minecraft",
+          "Dimensions": [["'${SERVICE}'"]],
+          "Metrics": [
+            {
+              "Name": "Connections",
+              "Unit": "Count",
+              "StorageResolution": 60
+            }
+          ]
+        }
+      ]
+    },
+    "Connections": '${CONNECTIONS}',
+  }'
   if [ $CONNECTIONS -lt 1 ]
   then
     echo "No active connections detected, $COUNTER out of $SHUTDOWNMIN minutes..."

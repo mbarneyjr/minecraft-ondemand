@@ -46,3 +46,5 @@ export const vanillaService = new MinecraftService('Vanilla', {
   cluster,
   backup: true,
 });
+
+export const services = [vanillaService];

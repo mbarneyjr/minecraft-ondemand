@@ -18,6 +18,7 @@ type Config = {
   watchdogImage: string;
   hostedZoneName: string;
   rootDomainName: string;
+  createDashboard: boolean;
 };
 
 const envMap: Record<string, Partial<Config>> = {
@@ -30,6 +31,7 @@ const envMap: Record<string, Partial<Config>> = {
     motd: '\u00a7bWelcome to the\u00a7e Salty Spatoon\u00a7r\n\u00a7oHow tough are ya?',
     hostedZoneName: `${baseDomainName}`,
     rootDomainName: `${baseDomainName}`,
+    createDashboard: true,
   },
   qa: {
     ipv4IpamPoolId,
@@ -64,6 +66,7 @@ const defaultConfig: Config = {
   watchdogImage: '512329539140.dkr.ecr.us-east-2.amazonaws.com/minecraft-ondemand-watchdog:0.0.1',
   hostedZoneName: process.env.HOSTED_ZONE_NAME ?? `dev.${baseDomainName}`,
   rootDomainName: process.env.DOMAIN_NAME ?? `${$app.stage}.dev.${baseDomainName}`,
+  createDashboard: Boolean(process.env.CREATE_DASHBOARD),
 };
 
 const config: Config = Object.assign(defaultConfig, envMap[$app.stage]);

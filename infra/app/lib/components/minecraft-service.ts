@@ -22,6 +22,9 @@ type MinecraftServiceArgs = {
 };
 
 export class MinecraftService {
+  id: string;
+  serviceName: string;
+
   resourceName: string;
   domainName: string;
   hostedZone: aws.route53.Zone;
@@ -34,8 +37,10 @@ export class MinecraftService {
   addFileLambda: sst.aws.Function;
 
   constructor(name: string, args: MinecraftServiceArgs) {
+    this.id = args.id;
     const serviceName = `${$app.name}-${$app.stage}-${args.id}`;
     const taskName = `${$app.name}-${$app.stage}-${args.id}`;
+    this.serviceName = serviceName;
     this.resourceName = name;
     this.domainName = args.domainName;
     this.hostedZone = args.hostedZone;

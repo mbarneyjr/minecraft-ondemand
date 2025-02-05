@@ -3,6 +3,9 @@ import { FC, PropsWithChildren } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
 import { Context } from 'hono';
 import { getAuth, Session } from '#src/middleware/oidc.js';
+import { readFileSync } from 'fs';
+
+const navbar = readFileSync('./public/components/nav-bar.mjs').toString();
 
 export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
   const auth = await getAuth(props.c);
@@ -30,7 +33,7 @@ export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
               background-color: white;
             }
           `}</Style>
-          <script src="/public/components/nav-bar.mjs" type="module"></script>
+          <script type="module" dangerouslySetInnerHTML={{ __html: navbar }}></script>
           <nav-bar breakpoint="864px" className="mx-auto max-w-screen-lg">
             <a className="p-4 text-lg hover:bg-green-700" href="/" slot="left">
               {Resource.Config.rootDomainName}

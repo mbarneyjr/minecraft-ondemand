@@ -117,6 +117,12 @@ export const siteFunction = new sst.aws.Function('SiteFunction', {
   url: true,
   dev: false, // sst live lambda does not support ipv6 due to AppSync Events
   link: [configLink, email, table, ipv6Proxy, oidcLink, mountPathLink],
+  copyFiles: [
+    {
+      from: 'packages/site/src/public',
+      to: 'public',
+    },
+  ],
   volume: {
     efs,
     path: mountPathLink.properties.path,

@@ -60,11 +60,31 @@ export class Email {
     });
   }
 
+  static async addUserEmail(email: string) {
+    await Email.#dynamoClient().put({
+      TableName: Resource.EmailTable.name,
+      Item: {
+        pk: 'USER_EMAIL',
+        sk: email,
+      },
+    });
+  }
+
   static async removeAdminEmail(email: string) {
     await Email.#dynamoClient().delete({
       TableName: Resource.EmailTable.name,
       Key: {
         pk: 'ADMIN_EMAIL',
+        sk: email,
+      },
+    });
+  }
+
+  static async removeUserEmail(email: string) {
+    await Email.#dynamoClient().delete({
+      TableName: Resource.EmailTable.name,
+      Key: {
+        pk: 'USER_EMAIL',
         sk: email,
       },
     });
@@ -83,6 +103,31 @@ export class Email {
         },
         ExpressionAttributeValues: {
           ':pk': 'ADMIN_EMAIL',
+        },
+      },
+    );
+    const emails: Array<string> = [];
+    for await (const page of paginator) {
+      for (const item of page?.Items ?? []) {
+        emails.push(item.sk);
+      }
+    }
+    return emails;
+  }
+
+  static async listUserEmails(): Promise<Array<string>> {
+    const paginator = paginateQuery(
+      {
+        client: Email.#dynamoClient(),
+      },
+      {
+        TableName: Resource.EmailTable.name,
+        KeyConditionExpression: '#pk = :pk',
+        ExpressionAttributeNames: {
+          '#pk': 'pk',
+        },
+        ExpressionAttributeValues: {
+          ':pk': 'USER_EMAIL',
         },
       },
     );

@@ -46,7 +46,7 @@ admin.get('/', protectedMiddleware, async (c) => {
             ))}
           </ul>
         </div>
-        <div className="sahdow-lg flex flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">
+        <div className="flex flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">
           <h2 className="text-xl">Admin Auth Debug Info:</h2>
           <pre className="max-w-full overflow-auto bg-green-50 p-4">{JSON.stringify(auth, null, 2)}</pre>
         </div>

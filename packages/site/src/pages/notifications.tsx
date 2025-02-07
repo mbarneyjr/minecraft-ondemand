@@ -25,7 +25,7 @@ notifications.get('/', async (c) => {
     );
   return c.html(
     <Layout c={c}>
-      <div className="mx-auto flex max-w-screen-2xl flex-col gap-4 p-4">
+      <div className="mx-auto flex max-w-screen-lg flex-col gap-4 p-4">
         <h1 className="text-center text-2xl">Email Notification Settings</h1>
         {message !== undefined ? (
           <div className={`${messageStyles} flex items-center justify-center gap-1 p-4`}>
@@ -34,25 +34,38 @@ notifications.get('/', async (c) => {
           </div>
         ) : null}
         <div className="rounded-lg bg-green-100 p-6 shadow-lg">
-          <form action="/notifications" method="post" className="flex flex-col gap-4">
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <input
-                type="text"
-                name="email"
-                placeholder="Your Email"
-                className="flex-grow rounded-lg border-2 border-green-300 p-4"
-              />
-              <div className="flex flex-row gap-4 sm:flex-col">
-                <label for="subscribe" className="m-auto">
-                  Subscribe
-                </label>
-                <input type="checkbox" name="subscribe" value="true" className="m-auto h-8 w-8" />
-              </div>
-            </div>
-            <button type="submit" className="rounded-lg bg-green-800 p-4 font-bold text-white">
-              Submit Settings
-            </button>
+          <form
+            id="notifications"
+            action="/notifications"
+            method="post"
+            className="grid grid-cols-[auto_1fr] grid-rows-2 gap-4"
+          >
+            <label for="email" className="my-auto text-right">
+              Your email:
+            </label>
+            <input
+              type="text"
+              name="email"
+              placeholder="you@email.com"
+              className="flex-grow rounded-lg border-2 border-green-300 p-2 text-sm"
+            />
+            <label for="subscribe" className="my-auto text-right">
+              Subscribe
+            </label>
+            <input
+              type="checkbox"
+              name="subscribe"
+              value="true"
+              className="h-8 w-8 rounded-lg border-2 border-green-300 p-2 text-sm accent-green-800"
+            />
           </form>
+          <button
+            form="notifications"
+            type="submit"
+            className="w-full rounded-lg bg-green-800 p-4 font-bold text-white"
+          >
+            Submit Settings
+          </button>
           <ul className="flex flex-col rounded-lg"></ul>
         </div>
       </div>

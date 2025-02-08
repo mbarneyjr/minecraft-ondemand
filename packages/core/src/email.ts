@@ -1,10 +1,12 @@
 import { SES, SendEmailCommand } from '@aws-sdk/client-ses';
+import { SESv2, SendBulkEmailCommand } from '@aws-sdk/client-sesv2';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, paginateQuery } from '@aws-sdk/lib-dynamodb';
 import { Resource } from 'sst';
 
 export class Email {
   static sesClient: SES | null = null;
+  static sesV2Client: SESv2 | null = null;
   static ddbClient: DynamoDBDocument | null = null;
 
   static #sesClient(): SES {
@@ -14,6 +16,15 @@ export class Email {
       });
     }
     return Email.sesClient;
+  }
+
+  static #sesV2Client(): SESv2 {
+    if (!Email.sesV2Client) {
+      Email.sesV2Client = new SESv2({
+        useDualstackEndpoint: true,
+      });
+    }
+    return Email.sesV2Client;
   }
 
   static #dynamoClient(): DynamoDBDocument {
@@ -43,6 +54,39 @@ export class Email {
             Html: {
               Data: options.body,
             },
+          },
+        },
+      }),
+    );
+  }
+
+  static async sendTemplatedEmail(options: { destinations: Array<string>; subject: string; body: string }) {
+    const response = await this.#sesV2Client().send(
+      new SendBulkEmailCommand({
+        FromEmailAddress: `no-reply@${Resource.Config.rootDomainName}`,
+        BulkEmailEntries: options.destinations.map((d) => {
+          return {
+            Destination: {
+              ToAddresses: [d],
+            },
+            ReplacementEmailContent: {
+              ReplacementTemplate: {
+                ReplacementTemplateData: JSON.stringify({
+                  email: d,
+                }),
+              },
+            },
+          };
+        }),
+        DefaultContent: {
+          Template: {
+            TemplateContent: {
+              Subject: options.subject,
+              Html: options.body,
+            },
+            TemplateData: JSON.stringify({
+              email: '',
+            }),
           },
         },
       }),

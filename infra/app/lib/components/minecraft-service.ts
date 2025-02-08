@@ -463,6 +463,12 @@ export class MinecraftService {
     const notifier = new sst.aws.Function(`${name}Notifier`, {
       handler: 'packages/user-notifier/src/handler.lambdaHandler',
       link: [configLink, email, table, ipv6Proxy, oidcLink, mountPathLink],
+      permissions: [
+        {
+          actions: ['ses:SendBulkEmail'],
+          resources: ['*'],
+        },
+      ],
     });
     new aws.lambda.Permission(`${name}Notifier`, {
       statementId: 'AllowEventsInvoke',

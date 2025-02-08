@@ -9,7 +9,10 @@ const subject = 'Server Startup';
 
 export const ServerStartupEmail: FC<{ domainName: string }> = (props) => {
   return (
-    <EmailLayout subject={subject}>
+    <EmailLayout
+      subject={subject}
+      unsubscribeUrl={`https://${Resource.Config.rootDomainName}/notifications/{{email}}?unsubscribe`}
+    >
       <div className={twi('p-4 text-lg text-green-700')}>
         <p>The server is now live!</p>
         <p>Connect to the server using the following address:</p>
@@ -28,10 +31,10 @@ export const ServerStartupEmail: FC<{ domainName: string }> = (props) => {
 
 export async function sendServerStartupEmail(destinations: Array<string>, domainName: string) {
   if (!destinations.length) return;
+
   const email = (<ServerStartupEmail domainName={domainName} />).toString();
   const body = email.replace(/class=/g, 'style=');
-  console.log(body);
-  await Email.sendEmail({
+  await Email.sendTemplatedEmail({
     destinations,
     subject,
     body,

@@ -3,7 +3,7 @@ import { FC, PropsWithChildren } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
 import { twi } from 'tw-to-css';
 
-export const EmailLayout: FC<PropsWithChildren<{ subject: string }>> = (props) => {
+export const EmailLayout: FC<PropsWithChildren<{ subject: string; unsubscribeUrl?: string }>> = (props) => {
   return (
     <html>
       <head>
@@ -26,14 +26,22 @@ export const EmailLayout: FC<PropsWithChildren<{ subject: string }>> = (props) =
           </div>
         </header>
         <div className={twi('p-4')}>{props.children}</div>
-        <footer>
-          <div className={twi('bg-green-800 p-4 text-center text-lg text-green-100 shadow-lg')}>
+        <footer className={twi('bg-green-800 p-4 text-center text-lg text-green-100 shadow-lg')}>
+          <p>
             See more at{' '}
-            <a className={twi('text-yellow-300')} href={`https://${Resource.Config.rootDomainName}`}>
+            <a className={twi('text-yellow-300 underline')} href={`https://${Resource.Config.rootDomainName}`}>
               {Resource.Config.rootDomainName}
             </a>
             .
-          </div>
+          </p>
+          {props.unsubscribeUrl && (
+            <p className={twi('bg-green-800 text-center text-sm text-green-100')}>
+              <a href={props.unsubscribeUrl} className={twi('text-yellow-300 text-sm underline')}>
+                Unsubscribe
+              </a>{' '}
+              to stop receiving emails.
+            </p>
+          )}
         </footer>
       </body>
     </html>

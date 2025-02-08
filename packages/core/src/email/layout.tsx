@@ -25,7 +25,7 @@ export const EmailLayout: FC<PropsWithChildren<{ subject: string; unsubscribeUrl
             <span className={twi('text-2xl font-bold text-green-100')}>{props.subject}</span>
           </div>
         </header>
-        <div className={twi('p-4')}>{props.children}</div>
+        <div className={twi('p-4 bg-green-50')}>{props.children}</div>
         <footer className={twi('bg-green-800 p-4 text-center text-lg text-green-100 shadow-lg')}>
           <p>
             See more at{' '}

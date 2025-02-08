@@ -2,7 +2,8 @@ import { Resource } from 'sst';
 import { FC } from 'hono/jsx';
 import { css, cx, keyframes, Style } from 'hono/css';
 import { twi } from 'tw-to-css';
-import { EmailLayout } from '#src/components/email/layout.js';
+import { EmailLayout } from './layout.js';
+import { Email } from '#src/email.mjs';
 
 export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
   return (
@@ -24,3 +25,15 @@ export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
     </EmailLayout>
   );
 };
+
+export async function sendWhitelistRequestEmail(destinations: Array<string>, username: string) {
+  if (!destinations.length) return;
+  const email = (<WhitelistRequestEmail username={username} />).toString();
+  const body = email.replace(/class=/g, 'style=');
+
+  await Email.sendEmail({
+    destinations,
+    subject: 'Whitelist Request',
+    body,
+  });
+}

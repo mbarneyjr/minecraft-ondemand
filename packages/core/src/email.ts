@@ -19,7 +19,6 @@ export class Email {
   static #dynamoClient(): DynamoDBDocument {
     if (!Email.ddbClient) {
       const endpoint = `https://dynamodb--us-east-2--amazonaws--com.${Resource.Ipv6Proxy.domainName}`;
-      console.log(`DynamoDB endpoint: ${endpoint}`);
       Email.ddbClient = DynamoDBDocument.from(
         new DynamoDB({
           endpoint,

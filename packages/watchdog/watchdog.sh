@@ -120,6 +120,20 @@ then
   echo "Bedrock ping string is $BEDROCKPING"
 fi
 
+DETAIL=$(echo '{
+  "serviceId": "'${SERVICE_ID}'",
+  "domainName": "'${SERVERNAME}'",
+  "publicIp": "'${PUBLICIP}'",
+  "edition": "'${EDITION}'"
+}' | jq -c '. | tostring')
+aws events put-events --entries "$(echo '[
+  {
+    "Source": "minecraft-ondemand",
+    "DetailType": "ServiceListening",
+    "Detail": '$DETAIL'
+  }
+]' | jq -c .)"
+
 echo "Checking every 1 minute for active connections to Minecraft, up to $STARTUPMIN minutes..."
 COUNTER=0
 CONNECTED=0

@@ -132,7 +132,7 @@ aws events put-events --entries "$(echo '[
     "DetailType": "ServiceListening",
     "Detail": '$DETAIL'
   }
-]' | jq -c .)"
+]' | jq -c .)" | jq -c .
 
 echo "Checking every 1 minute for active connections to Minecraft, up to $STARTUPMIN minutes..."
 COUNTER=0

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minecraft-ondemand/user-notifier",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.js": "./*.js"
+  },
+  "exports": {
+    "./*": {
+      "import": "./src/*.js"
+    },
+    ".": {
+      "import": "./src/index.js"
+    }
+  },
+  "scripts": {
+    "types": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.716.0",
+    "@aws-sdk/client-ses": "^3.716.0",
+    "@aws-sdk/lib-dynamodb": "^3.716.0",
+    "@minecraft-ondemand/core": "^0.0.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.146"
+  }
+}

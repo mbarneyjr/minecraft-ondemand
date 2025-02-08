@@ -67,7 +67,7 @@ const appClientLink = new sst.Linkable('AppClientLink', {
   },
 });
 
-const table = new sst.aws.Dynamo('EmailTable', {
+export const table = new sst.aws.Dynamo('EmailTable', {
   fields: {
     pk: 'string',
     sk: 'string',
@@ -78,14 +78,14 @@ const table = new sst.aws.Dynamo('EmailTable', {
   },
 });
 
-const email = new sst.aws.Email('Email', {
+export const email = new sst.aws.Email('Email', {
   sender: config.rootDomainName,
   dns: sst.aws.dns({
     zone: zone.id,
   }),
 });
 
-const configLink = new sst.Linkable('Config', {
+export const configLink = new sst.Linkable('Config', {
   properties: {
     rootDomainName: config.rootDomainName,
   },
@@ -95,7 +95,7 @@ const password = new random.RandomPassword('OidcSecret', {
   length: 32,
 });
 
-const oidcLink = new sst.Linkable('Oidc', {
+export const oidcLink = new sst.Linkable('Oidc', {
   properties: {
     issuer: $interpolate`https://cognito-idp.${region.name}.amazonaws.com/${userPool.id}`,
     authSecret: password.result,
@@ -106,7 +106,7 @@ const oidcLink = new sst.Linkable('Oidc', {
   },
 });
 
-const mountPathLink = new sst.Linkable('MountPath', {
+export const mountPathLink = new sst.Linkable('MountPath', {
   properties: {
     path: '/mnt/efs',
   },

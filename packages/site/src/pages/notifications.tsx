@@ -34,6 +34,7 @@ const NotificationControl: FC<{ error?: string; success?: string; email?: string
         </div>
       ) : null}
       <div className="rounded-lg bg-green-100 p-6 shadow-lg">
+        <p className="pb-4 text-center">Get notified whenever the server is running.</p>
         <form
           id="notifications"
           action="/notifications"

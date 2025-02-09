@@ -6,6 +6,8 @@ import { config, providers } from '../../config';
 import { identity, region } from '../../data';
 import { backupBucket, datasyncLogs, datasyncRole } from '../../backup';
 import { vpc } from '../../vpc';
+import { ipv6Proxy } from '../../ipv6-proxy';
+import { configLink, email, mountPathLink, oidcLink, table } from '../../site';
 
 type MinecraftServiceArgs = {
   id: string;
@@ -77,6 +79,9 @@ export class MinecraftService {
         accessPoint: this.accessPoint,
       });
     }
+    this.#createNotifier(name, args, {
+      serviceName,
+    });
   }
 
   addFile(path: string, data: $util.Input<string>) {
@@ -370,6 +375,11 @@ export class MinecraftService {
                 Action: ['route53:GetHostedZone', 'route53:ChangeResourceRecordSets', 'route53:ListResourceRecordSets'],
                 Resource: $interpolate`arn:aws:route53:::hostedzone/${args.hostedZone.id}`,
               },
+              {
+                Effect: 'Allow',
+                Action: ['events:PutEvents'],
+                Resource: $interpolate`arn:aws:events:${region.name}:${identity.accountId}:event-bus/default`,
+              },
             ],
           }),
         },
@@ -440,6 +450,42 @@ export class MinecraftService {
         preserveDeletedFiles: 'REMOVE',
         logLevel: 'TRANSFER',
       },
+    });
+  }
+
+  #createNotifier(
+    name: string,
+    args: MinecraftServiceArgs,
+    options: {
+      serviceName: string;
+    },
+  ) {
+    const notifier = new sst.aws.Function(`${name}Notifier`, {
+      handler: 'packages/user-notifier/src/handler.lambdaHandler',
+      link: [configLink, email, table, ipv6Proxy, oidcLink, mountPathLink],
+      permissions: [
+        {
+          actions: ['ses:SendBulkEmail'],
+          resources: ['*'],
+        },
+      ],
+    });
+    new aws.lambda.Permission(`${name}Notifier`, {
+      statementId: 'AllowEventsInvoke',
+      action: 'lambda:InvokeFunction',
+      function: notifier.name,
+      principal: 'events.amazonaws.com',
+    });
+    const rule = new aws.cloudwatch.EventRule(`${name}Notifier`, {
+      name: `${options.serviceName}-notifier`,
+      eventPattern: JSON.stringify({
+        source: ['minecraft-ondemand'],
+        detailType: ['ServiceListening'],
+      }),
+    });
+    new aws.cloudwatch.EventTarget(`${name}Notifier`, {
+      rule: rule.name,
+      arn: notifier.arn,
     });
   }
 }

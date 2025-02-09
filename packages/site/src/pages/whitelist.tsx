@@ -1,8 +1,8 @@
 import qs from 'querystring';
 import { createFactory } from 'hono/factory';
 import { Email } from '@minecraft-ondemand/core/email';
+import { sendWhitelistRequestEmail } from '@minecraft-ondemand/core/email/whitelist-request';
 import { Whitelist } from '@minecraft-ondemand/core/whitelist';
-import { WhitelistRequestEmail } from '#src/components/email/whitelist-request.js';
 import { protectedMiddleware } from '#src/middleware/oidc.js';
 
 const factory = createFactory();
@@ -15,17 +15,11 @@ whitelist.post('/', async (c) => {
   if (typeof username !== 'string' || !username) {
     return c.redirect('/?error=invalid-username#join');
   }
-  const email = await c.render(<WhitelistRequestEmail username={username} />);
-  const content = (await email.text()).replace(/class=/g, 'style=');
   const adminEmails = await Email.listAdminEmails();
   if (!adminEmails.length) {
     return c.redirect('/?error=no-admin-emails#join');
   }
-  await Email.sendEmail({
-    destinations: adminEmails,
-    subject: 'Whitelist Request',
-    body: content,
-  });
+  await sendWhitelistRequestEmail(adminEmails, username);
   return c.redirect('/?success=request-sent#join');
 });
 

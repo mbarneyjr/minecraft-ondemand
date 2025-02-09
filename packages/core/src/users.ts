@@ -1,5 +1,6 @@
 import { CognitoIdentityProvider, AdminCreateUserCommand } from '@aws-sdk/client-cognito-identity-provider';
 import { Resource } from 'sst';
+import { Email } from './email.js';
 
 export class Users {
   static #cognitoIdp: CognitoIdentityProvider | null = null;
@@ -18,5 +19,6 @@ export class Users {
         UserPoolId: Resource.UserPoolLink.userPoolId,
       }),
     );
+    await Email.addAdminEmail(email);
   }
 }

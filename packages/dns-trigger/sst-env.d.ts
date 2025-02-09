@@ -73,6 +73,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
     }
+    "VanillaNotifier": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "Vpc": {
       "bastion": string
       "type": "sst.aws.Vpc"

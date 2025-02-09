@@ -8,6 +8,7 @@ import { admin } from '#src/pages/admin.js';
 import { HomePage } from '#src/pages/home-page.js';
 import { whitelist } from '#src/pages/whitelist.js';
 import { authMiddleware, installAuthRoutes } from './middleware/oidc.js';
+import { notifications } from './pages/notifications.js';
 
 export const app = new Hono();
 
@@ -33,6 +34,7 @@ app.get('/', async (c) => {
 });
 
 app.route('/admin', admin);
+app.route('/notifications', notifications);
 app.route('/whitelist', whitelist);
 
 export const honoHandler = handle(app);

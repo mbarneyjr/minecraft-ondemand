@@ -11,7 +11,7 @@ const factory = createFactory();
 
 export const notifications = factory.createApp();
 
-const NotificationControl: FC<{ error?: string; success?: string; email?: string }> = (props) => {
+const NotificationControl: FC<{ error?: string; success?: string; email?: string; subscribed?: boolean }> = (props) => {
   const messageStyles = props.error !== undefined ? 'text-red-800 bg-red-200' : 'text-green-800 bg-green-200';
   const message = {
     'invalid-email': 'Invalid Email. Please try again.',
@@ -56,6 +56,7 @@ const NotificationControl: FC<{ error?: string; success?: string; email?: string
           </label>
           <input
             type="checkbox"
+            checked={props.subscribed}
             name="subscribe"
             value="true"
             className="h-8 w-8 rounded-lg border-2 border-green-300 p-2 text-sm accent-green-800"
@@ -82,13 +83,14 @@ notifications.get('/', async (c) => {
 notifications.get('/:email', async (c) => {
   let { error, success, unsubscribe } = c.req.query();
   const email = c.req.param('email');
+  const subscribed = (await Email.getUserEmail(email)) !== null;
   if (unsubscribe !== undefined) {
     await Email.removeUserEmail(email);
     success = 'unsubscribed';
   }
   return c.html(
     <Layout c={c}>
-      <NotificationControl error={error} success={success} email={email} />
+      <NotificationControl error={error} success={success} email={email} subscribed={subscribed} />
     </Layout>,
   );
 });

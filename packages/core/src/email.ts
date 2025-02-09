@@ -113,6 +113,34 @@ export class Email {
     });
   }
 
+  static async getAdminEmail(email: string) {
+    const response = await Email.#dynamoClient().get({
+      TableName: Resource.EmailTable.name,
+      Key: {
+        pk: 'ADMIN_EMAIL',
+        sk: email,
+      },
+    });
+    if (!response.Item) {
+      return null;
+    }
+    return response.Item.sk as string;
+  }
+
+  static async getUserEmail(email: string) {
+    const response = await Email.#dynamoClient().get({
+      TableName: Resource.EmailTable.name,
+      Key: {
+        pk: 'USER_EMAIL',
+        sk: email,
+      },
+    });
+    if (!response.Item) {
+      return null;
+    }
+    return response.Item.sk as string;
+  }
+
   static async removeAdminEmail(email: string) {
     await Email.#dynamoClient().delete({
       TableName: Resource.EmailTable.name,

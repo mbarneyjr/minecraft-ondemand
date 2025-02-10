@@ -480,7 +480,7 @@ export class MinecraftService {
       name: `${options.serviceName}-notifier`,
       eventPattern: JSON.stringify({
         source: ['minecraft-ondemand'],
-        detailType: ['ServiceListening'],
+        'detail-type': ['ServiceListening'],
       }),
     });
     new aws.cloudwatch.EventTarget(`${name}Notifier`, {

@@ -138,6 +138,10 @@ export const siteFunction = new sst.aws.Function('SiteFunction', {
   },
   permissions: [
     {
+      actions: ['ecs:DescribeServices', 'ecs:UpdateService'],
+      resources: ['*'],
+    },
+    {
       actions: [
         'ec2:CreateNetworkInterface',
         'ec2:DescribeNetworkInterfaces',

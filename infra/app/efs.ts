@@ -15,7 +15,7 @@ export const mountTargets = vpc.privateSubnets.apply((subnets) => {
     }),
   );
 });
-export const rootAccessPoint = new aws.efs.AccessPoint('RootAccessPoint', {
+export const rawRootAccessPoint = new aws.efs.AccessPoint('RootAccessPoint', {
   fileSystemId: rawFileSystem.id,
   tags: {
     name: `${$app.name}-${$app.stage}-root`,
@@ -33,6 +33,15 @@ export const rootAccessPoint = new aws.efs.AccessPoint('RootAccessPoint', {
     },
   },
 });
+
+export const rootAccessPoint = aws.efs.AccessPoint.get(
+  'AccessPointRoot',
+  rawRootAccessPoint.id,
+  {},
+  {
+    dependsOn: $util.all([mountTargets]).apply(([mountTargets]) => [...mountTargets]),
+  },
+);
 
 export const efs = sst.aws.Efs.get('Efs', rawFileSystem.id, {
   dependsOn: $util

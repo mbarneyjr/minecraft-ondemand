@@ -1,7 +1,7 @@
 import { config } from './config';
 import { zone } from './data';
 import { vpc } from './vpc';
-import { efs } from './efs';
+import { rootAccessPoint } from './efs';
 import { Assets } from './lib/components/assets';
 import { ipv6Proxy } from './ipv6-proxy';
 
@@ -125,7 +125,7 @@ export const siteFunction = new sst.aws.Function('SiteFunction', {
     },
   ],
   volume: {
-    efs,
+    efs: rootAccessPoint.arn,
     path: mountPathLink.properties.path,
   },
   environment: {

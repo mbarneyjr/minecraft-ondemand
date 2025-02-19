@@ -6,15 +6,7 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "AppClientLink": {
-      "clientId": string
-      "type": "sst.sst.Linkable"
-    }
-    "ClusterLink": {
-      "clusterArn": string
-      "type": "sst.sst.Linkable"
-    }
-    "Config": {
+    "ConfigLink": {
       "rootDomainName": string
       "type": "sst.sst.Linkable"
     }
@@ -31,11 +23,11 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
-    "Ipv6Proxy": {
+    "Ipv6ProxyLink": {
       "domainName": string
       "type": "sst.sst.Linkable"
     }
-    "MountPath": {
+    "MountPathLink": {
       "path": string
       "type": "sst.sst.Linkable"
     }
@@ -43,17 +35,13 @@ declare module "sst" {
       "ip": string
       "type": "sst.sst.Linkable"
     }
-    "Oidc": {
+    "OidcLink": {
       "authSecret": string
       "clientId": string
       "clientSecret": string
       "issuer": string
       "redirectUri": string
       "scopes": string
-      "type": "sst.sst.Linkable"
-    }
-    "ServicesLink": {
-      "services": any
       "type": "sst.sst.Linkable"
     }
     "SiteFunction": {
@@ -69,7 +57,7 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
-    "TargetRegion": {
+    "TargetRegionLink": {
       "name": string
       "type": "sst.sst.Linkable"
     }
@@ -85,6 +73,16 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
     }
+    "VanillaServiceLink": {
+      "type": "sst.sst.Linkable"
+      "vanillaCluster": string
+      "vanillaDomainName": string
+      "vanillaId": string
+      "vanillaMapTaskDefinition": string
+      "vanillaSecurityGroup": string
+      "vanillaSubnets": any
+      "vanillaTaskDefinition": string
+    }
     "VanillaSiteMapBucket": {
       "name": string
       "type": "sst.aws.Bucket"
@@ -96,11 +94,6 @@ declare module "sst" {
     "Vpc": {
       "bastion": string
       "type": "sst.aws.Vpc"
-    }
-    "VpcLink": {
-      "privateSubnets": any
-      "publicSubnets": any
-      "type": "sst.sst.Linkable"
     }
   }
 }

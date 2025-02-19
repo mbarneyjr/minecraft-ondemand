@@ -16,7 +16,7 @@ export const WhitelistRequestEmail: FC<{ username: string }> = (props) => {
       </div>
       <div className={twi('flex w-full gap-4')} style="gap: 1rem">
         <a
-          href={`https://${Resource.Config.rootDomainName}/whitelist/approve?username=${props.username}`}
+          href={`https://${Resource.ConfigLink.rootDomainName}/whitelist/approve?username=${props.username}`}
           className={twi('m-4 w-full rounded-lg bg-green-600 p-4 text-center text-lg text-white')}
         >
           Approve

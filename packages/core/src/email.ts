@@ -29,7 +29,7 @@ export class Email {
 
   static #dynamoClient(): DynamoDBDocument {
     if (!Email.ddbClient) {
-      const endpoint = `https://dynamodb--us-east-2--amazonaws--com.${Resource.Ipv6Proxy.domainName}`;
+      const endpoint = `https://dynamodb--us-east-2--amazonaws--com.${Resource.Ipv6ProxyLink.domainName}`;
       Email.ddbClient = DynamoDBDocument.from(
         new DynamoDB({
           endpoint,
@@ -42,7 +42,7 @@ export class Email {
   static async sendEmail(options: { destinations: Array<string>; subject: string; body: string }) {
     const response = await this.#sesClient().send(
       new SendEmailCommand({
-        Source: `no-reply@${Resource.Config.rootDomainName}`,
+        Source: `no-reply@${Resource.ConfigLink.rootDomainName}`,
         Destination: {
           ToAddresses: options.destinations,
         },
@@ -63,7 +63,7 @@ export class Email {
   static async sendTemplatedEmail(options: { destinations: Array<string>; subject: string; body: string }) {
     const response = await this.#sesV2Client().send(
       new SendBulkEmailCommand({
-        FromEmailAddress: `no-reply@${Resource.Config.rootDomainName}`,
+        FromEmailAddress: `no-reply@${Resource.ConfigLink.rootDomainName}`,
         BulkEmailEntries: options.destinations.map((d) => {
           return {
             Destination: {

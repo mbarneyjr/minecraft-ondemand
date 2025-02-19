@@ -129,7 +129,7 @@ const wildcardDnsRecord = new aws.route53.Record('Ipv6ProxyWildcardDnsRecord', {
   ],
 });
 
-export const ipv6Proxy = new sst.Linkable('Ipv6Proxy', {
+export const ipv6Proxy = new sst.Linkable('Ipv6ProxyLink', {
   properties: {
     domainName: proxyDomainName,
   },

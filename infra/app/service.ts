@@ -1,11 +1,11 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
+import { zone } from './data';
+import { config } from './config';
 import { vpc } from './vpc';
 import { efs, fileSystem, rootAccessPoint } from './efs';
-import { config } from './config';
 import { containerDefinitions } from './lib/container-definition';
 import { MinecraftService } from './lib/components/minecraft-service';
-import { zone } from './data';
 
 export const cluster = new aws.ecs.Cluster('Cluster', {
   name: `${$app.name}-${$app.stage}`,
@@ -45,6 +45,19 @@ export const vanillaService = new MinecraftService('Vanilla', {
   fileSystem,
   cluster,
   backup: true,
+  map: true,
 });
 
 export const services = [vanillaService];
+
+export const vanillaServiceLink = new sst.Linkable('VanillaServiceLink', {
+  properties: {
+    vanillaId: vanillaService.id,
+    vanillaDomainName: vanillaService.domainName,
+    vanillaSecurityGroup: vanillaService.securityGroup.id,
+    vanillaCluster: cluster.arn,
+    vanillaTaskDefinition: vanillaService.taskDefinition.arn,
+    vanillaSubnets: vanillaService.vpc.publicSubnets,
+    vanillaMapTaskDefinition: vanillaService.mapTaskDefinition?.arn,
+  },
+});

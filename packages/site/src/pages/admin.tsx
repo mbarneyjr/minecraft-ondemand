@@ -3,9 +3,11 @@ import { Context } from 'hono';
 import { createFactory } from 'hono/factory';
 import { Whitelist } from '@minecraft-ondemand/core/whitelist';
 import { Service } from '@minecraft-ondemand/core/service';
+import { Mapsync } from '@minecraft-ondemand/core/mapsync';
 import { Layout } from '#src/components/layout.js';
 import { DeleteIcon } from '#src/icons/delete.js';
 import { getAuth, protectedMiddleware } from '#src/middleware/oidc.js';
+import { Resource } from 'sst';
 
 const factory = createFactory();
 
@@ -29,6 +31,12 @@ admin.post('/server-status', protectedMiddleware, async (c) => {
       status = await Service.getStatus();
     }
   }
+  return c.redirect('/admin');
+});
+
+admin.post('/mapsync', protectedMiddleware, async (c) => {
+  const body = await c.req.formData();
+  await Mapsync.startMapsync();
   return c.redirect('/admin');
 });
 
@@ -98,6 +106,14 @@ admin.get('/', protectedMiddleware, async (c) => {
               </li>
             ))}
           </ul>
+        </div>
+        <div className="flex flex-auto flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">
+          <h2 className="text-xl">Map Sync:</h2>
+          <form action="/admin/mapsync" method="post" className="flex flex-col gap-4 sm:flex-row">
+            <button type="submit" className="min-w-fit rounded-lg bg-green-800 p-4 font-bold text-white">
+              Update Map
+            </button>
+          </form>
         </div>
         {'debug' in c.req.query() ? (
           <div className="flex flex-auto flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">

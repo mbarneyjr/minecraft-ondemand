@@ -11,7 +11,7 @@ export const ServerStartupEmail: FC<{ domainName: string }> = (props) => {
   return (
     <EmailLayout
       subject={subject}
-      unsubscribeUrl={`https://${Resource.Config.rootDomainName}/notifications/{{email}}?unsubscribe`}
+      unsubscribeUrl={`https://${Resource.ConfigLink.rootDomainName}/notifications/{{email}}?unsubscribe`}
     >
       <div className={twi('p-4 text-lg text-green-700')}>
         <p>The server is now live!</p>

@@ -1,7 +1,10 @@
-export { services } from './service';
-export { vpc } from './vpc';
-export { dnsTrigger } from './trigger';
-export { siteFunction, siteStaticAssets } from './site';
-export { ipv6Proxy } from './ipv6-proxy';
-export { backupBucket } from './backup';
-import './monitoring';
+import * as vpc from './vpc';
+import * as efs from './efs';
+import * as service from './service';
+import * as trigger from './trigger';
+import * as ipv6Proxy from './ipv6-proxy';
+import * as site from './site';
+import * as backup from './backup';
+import * as monitoring from './monitoring';
+
+export { vpc, efs, service, trigger, ipv6Proxy, site, backup, monitoring };

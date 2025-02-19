@@ -6,7 +6,7 @@ export class Service {
 
   static ecs(): ECS {
     if (!Service.#ecs) {
-      const endpoint = `https://ecs--us-east-2--amazonaws--com.${Resource.Ipv6Proxy.domainName}`;
+      const endpoint = `https://ecs--us-east-2--amazonaws--com.${Resource.Ipv6ProxyLink.domainName}`;
       Service.#ecs = new ECS({ endpoint });
     }
     return Service.#ecs;

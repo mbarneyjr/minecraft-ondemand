@@ -173,6 +173,11 @@ export class MinecraftService {
       securityGroup: aws.ec2.SecurityGroup;
     },
   ) {
+    const keepAliveParameter = new aws.ssm.Parameter(`${name}KeepAliveParameter`, {
+      name: $interpolate`/${$app.name}/${$app.stage}/${args.id}/keepalive`,
+      type: 'String',
+      value: 'false',
+    });
     const minecraftLogGroup = new aws.cloudwatch.LogGroup(`${name}GameLogGroup`, {
       name: `/${$app.name}/${$app.stage}/${args.id}/game`,
     });
@@ -387,6 +392,11 @@ export class MinecraftService {
                   $interpolate`arn:aws:ecs:${region.name}:${identity.accountId}:service/${args.cluster.name}/${options.serviceName}`,
                   $interpolate`arn:aws:ecs:${region.name}:${identity.accountId}:task/${args.cluster.name}/*`,
                 ],
+              },
+              {
+                Effect: 'Allow',
+                Action: 'ssm:GetParameter',
+                Resource: '*',
               },
               {
                 Effect: 'Allow',

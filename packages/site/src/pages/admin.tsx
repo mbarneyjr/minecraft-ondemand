@@ -40,10 +40,22 @@ admin.post('/mapsync', protectedMiddleware, async (c) => {
   return c.redirect('/admin');
 });
 
+admin.post('/keep-alive', protectedMiddleware, async (c) => {
+  const body = await c.req.formData();
+  if (body.has('enable')) {
+    await Service.setKeepalive({ enabled: true });
+  }
+  if (body.has('disable')) {
+    await Service.setKeepalive({ enabled: false });
+  }
+  return c.redirect('/admin');
+});
+
 admin.get('/', protectedMiddleware, async (c) => {
   const auth = c.get('auth');
   const users = Whitelist.listUsers('vanilla');
   const serviceStatus = await Service.getStatus();
+  const keepAlive = await Service.getKeepalive();
   const now = new Date();
   return c.html(
     <Layout c={c}>
@@ -80,6 +92,36 @@ admin.get('/', protectedMiddleware, async (c) => {
               Stop
             </button>
           </form>
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <h2 className="text-xl">Keep Alive:</h2>
+            <p className="text-center text-lg">
+              Status: <span className="font-mono font-semibold">{keepAlive ? 'enabled' : 'disabled'}</span>
+            </p>
+          </div>
+          <form action="/admin/keep-alive" method="post" className="flex flex-col gap-4 sm:flex-row">
+            <button
+              type="submit"
+              className="min-w-fit flex-grow rounded-lg bg-green-800 p-4 font-bold text-white"
+              name="enable"
+              value="enable"
+            >
+              Enable
+            </button>
+            <button
+              type="submit"
+              className="min-w-fit flex-grow rounded-lg bg-red-800 p-4 font-bold text-white"
+              name="disable"
+              value="disable"
+            >
+              Disable
+            </button>
+          </form>
+          <h2 className="text-xl">Map Sync:</h2>
+          <form action="/admin/mapsync" method="post" className="flex flex-col gap-4 sm:flex-row">
+            <button type="submit" className="w-full min-w-fit rounded-lg bg-green-800 p-4 font-bold text-white">
+              Update Map
+            </button>
+          </form>
         </div>
         <div className="flex flex-auto flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">
           <h2 className="text-xl">Whitelist:</h2>
@@ -106,14 +148,6 @@ admin.get('/', protectedMiddleware, async (c) => {
               </li>
             ))}
           </ul>
-        </div>
-        <div className="flex flex-auto flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">
-          <h2 className="text-xl">Map Sync:</h2>
-          <form action="/admin/mapsync" method="post" className="flex flex-col gap-4 sm:flex-row">
-            <button type="submit" className="min-w-fit rounded-lg bg-green-800 p-4 font-bold text-white">
-              Update Map
-            </button>
-          </form>
         </div>
         {'debug' in c.req.query() ? (
           <div className="flex flex-auto flex-col gap-4 rounded-lg bg-green-100 p-6 shadow-lg">

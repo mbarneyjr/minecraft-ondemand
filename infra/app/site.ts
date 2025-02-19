@@ -39,7 +39,14 @@ export const siteFunction = new sst.aws.Function('SiteFunction', {
   },
   permissions: [
     {
-      actions: ['ecs:DescribeServices', 'ecs:UpdateService', 'ecs:RunTask', 'iam:PassRole'],
+      actions: [
+        'ecs:DescribeServices',
+        'ecs:UpdateService',
+        'ecs:RunTask',
+        'iam:PassRole',
+        'ssm:GetParameter',
+        'ssm:PutParameter',
+      ],
       resources: ['*'],
     },
     {

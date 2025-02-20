@@ -157,7 +157,7 @@ export function worldConfig() {
             name: 'surface',
             title: 'Surface',
             prefix: 't',
-            perspective: 'iso_SE_30_hires',
+            perspective: 'iso_SW_30_hires',
             shader: 'stdtexture',
             lighting: 'shadows',
             mapzoomin: 3,

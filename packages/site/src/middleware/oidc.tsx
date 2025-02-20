@@ -232,12 +232,12 @@ export async function oidcAuthMiddleware(config: OidcConfig) {
 }
 
 export const { authMiddleware, protectedMiddleware, installAuthRoutes, getAuth } = await oidcAuthMiddleware({
-  issuer: new URL(Resource.Oidc.issuer),
-  authSecret: Resource.Oidc.authSecret,
-  clientId: Resource.Oidc.clientId,
-  clientSecret: Resource.Oidc.clientSecret,
-  scopes: Resource.Oidc.scopes,
-  redirectUri: Resource.Oidc.redirectUri,
+  issuer: new URL(Resource.OidcLink.issuer),
+  authSecret: Resource.OidcLink.authSecret,
+  clientId: Resource.OidcLink.clientId,
+  clientSecret: Resource.OidcLink.clientSecret,
+  scopes: Resource.OidcLink.scopes,
+  redirectUri: Resource.OidcLink.redirectUri,
   cookieName: 'auth',
   sessionDuration: 60 * 60 * 24 * 1,
 });

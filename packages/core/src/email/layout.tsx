@@ -29,8 +29,8 @@ export const EmailLayout: FC<PropsWithChildren<{ subject: string; unsubscribeUrl
         <footer className={twi('bg-green-800 p-4 text-center text-lg text-green-100 shadow-lg')}>
           <p>
             See more at{' '}
-            <a className={twi('text-yellow-300 underline')} href={`https://${Resource.Config.rootDomainName}`}>
-              {Resource.Config.rootDomainName}
+            <a className={twi('text-yellow-300 underline')} href={`https://${Resource.ConfigLink.rootDomainName}`}>
+              {Resource.ConfigLink.rootDomainName}
             </a>
             .
           </p>

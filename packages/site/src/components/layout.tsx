@@ -15,10 +15,10 @@ export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <title>{Resource.Config.rootDomainName}</title>
+        <title>{Resource.ConfigLink.rootDomainName}</title>
         <meta
           name="description"
-          content={`This is the landing page for ${Resource.Config.rootDomainName}, my on-demand Minecraft server.`}
+          content={`This is the landing page for ${Resource.ConfigLink.rootDomainName}, my on-demand Minecraft server.`}
         />
         <link rel="icon" type="image/svg" href="/favicon.ico" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -36,7 +36,7 @@ export const Layout: FC<PropsWithChildren<{ c: Context }>> = async (props) => {
           <script type="module" dangerouslySetInnerHTML={{ __html: navbar }}></script>
           <nav-bar breakpoint="864px" className="mx-auto max-w-screen-lg">
             <a className="p-4 text-lg hover:bg-green-700" href="/" slot="left">
-              {Resource.Config.rootDomainName}
+              {Resource.ConfigLink.rootDomainName}
             </a>
             <a className="p-4 text-lg hover:bg-green-700" href="/#join" slot="right">
               Join

@@ -4,7 +4,7 @@ import { cluster } from './service';
 const identity = await aws.getCallerIdentity();
 const region = await aws.getRegion();
 
-const targetRegionLinkable = new sst.Linkable('TargetRegion', {
+const targetRegionLinkable = new sst.Linkable('TargetRegionLink', {
   properties: {
     name: region.id,
   },

@@ -17,7 +17,7 @@ app.use('*', (c, next) => {
   // since requests go through a cloudfront proxy,
   // we need to correct this so the callback works
   const url = new URL(c.req.url);
-  url.hostname = Resource.Config.rootDomainName;
+  url.hostname = Resource.ConfigLink.rootDomainName;
   c.req.raw = new Request(url.href, c.req.raw);
   return next();
 });

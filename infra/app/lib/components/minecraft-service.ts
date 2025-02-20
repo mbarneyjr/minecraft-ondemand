@@ -2,12 +2,14 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import YAML from 'yaml';
 import { containerDefinitions } from '../container-definition';
-import { config, providers } from '../../config';
+import { config, configLink, providers } from '../../config';
 import { identity, region } from '../../data';
 import { backupBucket, datasyncLogs, datasyncRole } from '../../backup';
 import { vpc } from '../../vpc';
 import { ipv6Proxy } from '../../ipv6-proxy';
-import { configLink, email, mountPathLink, oidcLink, table } from '../../site';
+import { dynmapConfig, worldConfig } from '../dynmap-config';
+import { email, emailTable } from '../../email';
+import { oidcLink } from '../../auth';
 
 type MinecraftServiceArgs = {
   id: string;
@@ -21,6 +23,7 @@ type MinecraftServiceArgs = {
   memory: number;
   environmentConfig: Record<string, string | undefined>;
   backup: boolean;
+  map: boolean;
 };
 
 export class MinecraftService {
@@ -31,14 +34,21 @@ export class MinecraftService {
   domainName: string;
   hostedZone: aws.route53.Zone;
   securityGroup: aws.ec2.SecurityGroup;
+  vpc: sst.aws.Vpc;
   accessPoint: aws.efs.AccessPoint;
   executionRole: aws.iam.Role;
   taskRole: aws.iam.Role;
   service: aws.ecs.Service;
   taskDefinition: aws.ecs.TaskDefinition;
+  mapTaskDefinition: aws.ecs.TaskDefinition | null;
   addFileLambda: sst.aws.Function;
 
   constructor(name: string, args: MinecraftServiceArgs) {
+    if (args.map) {
+      const mods = (args.environmentConfig.MODS ?? '').split(',');
+      mods.push('https://mediafilez.forgecdn.net/files/6090/792/Dynmap-3.7-beta-8-spigot.jar');
+      args.environmentConfig.MODS = mods.join(',');
+    }
     this.id = args.id;
     const serviceName = `${$app.name}-${$app.stage}-${args.id}`;
     const taskName = `${$app.name}-${$app.stage}-${args.id}`;
@@ -46,8 +56,8 @@ export class MinecraftService {
     this.resourceName = name;
     this.domainName = args.domainName;
     this.hostedZone = args.hostedZone;
-
     this.accessPoint = this.#createAccessPoint(name, args);
+    this.vpc = args.vpc;
     this.securityGroup = this.#createSecurityGroup(name, args);
     const { executionRole, taskRole } = this.#createServiceRoles(name, args, {
       serviceName,
@@ -82,6 +92,19 @@ export class MinecraftService {
     this.#createNotifier(name, args, {
       serviceName,
     });
+    let dynmap;
+    if (args.map) {
+      dynmap = this.#configureDynmap(name, args, {
+        serviceName,
+        taskName,
+        executionRole: this.executionRole,
+        taskRole: this.taskRole,
+        fileSystem: args.fileSystem,
+        accessPoint: this.accessPoint,
+        securityGroup: this.securityGroup,
+      });
+    }
+    this.mapTaskDefinition = dynmap?.mapTaskDefinition ?? null;
   }
 
   addFile(path: string, data: $util.Input<string>) {
@@ -150,6 +173,11 @@ export class MinecraftService {
       securityGroup: aws.ec2.SecurityGroup;
     },
   ) {
+    const keepAliveParameter = new aws.ssm.Parameter(`${name}KeepAliveParameter`, {
+      name: $interpolate`/${options.serviceName}/keepalive`,
+      type: 'String',
+      value: 'false',
+    });
     const minecraftLogGroup = new aws.cloudwatch.LogGroup(`${name}GameLogGroup`, {
       name: `/${$app.name}/${$app.stage}/${args.id}/game`,
     });
@@ -367,6 +395,11 @@ export class MinecraftService {
               },
               {
                 Effect: 'Allow',
+                Action: 'ssm:GetParameter',
+                Resource: '*',
+              },
+              {
+                Effect: 'Allow',
                 Action: 'ec2:DescribeNetworkInterfaces',
                 Resource: '*',
               },
@@ -379,6 +412,11 @@ export class MinecraftService {
                 Effect: 'Allow',
                 Action: ['events:PutEvents'],
                 Resource: $interpolate`arn:aws:events:${region.name}:${identity.accountId}:event-bus/default`,
+              },
+              {
+                Effect: 'Allow',
+                Action: ['s3:ListBucket', 's3:GetObject', 's3:PutObject'],
+                Resource: '*',
               },
             ],
           }),
@@ -462,7 +500,7 @@ export class MinecraftService {
   ) {
     const notifier = new sst.aws.Function(`${name}Notifier`, {
       handler: 'packages/user-notifier/src/handler.lambdaHandler',
-      link: [configLink, email, table, ipv6Proxy, oidcLink, mountPathLink],
+      link: [configLink, email, emailTable, ipv6Proxy, oidcLink],
       permissions: [
         {
           actions: ['ses:SendBulkEmail'],
@@ -487,5 +525,166 @@ export class MinecraftService {
       rule: rule.name,
       arn: notifier.arn,
     });
+  }
+
+  #configureDynmap(
+    name: string,
+    args: MinecraftServiceArgs,
+    options: {
+      serviceName: string;
+      taskName: string;
+      executionRole: aws.iam.Role;
+      taskRole: aws.iam.Role;
+      fileSystem: aws.efs.FileSystem;
+      accessPoint: aws.efs.AccessPoint;
+      securityGroup: aws.ec2.SecurityGroup;
+    },
+  ) {
+    const dynampConfigurationTxt = JSON.stringify(dynmapConfig());
+    const dynmapWorldsTxt = JSON.stringify(worldConfig());
+    this.addFile('plugins/dynmap/configuration.txt', dynampConfigurationTxt);
+    this.addFile('plugins/dynmap/worlds.txt', dynmapWorldsTxt);
+
+    const mapBucket = new sst.aws.Bucket(`${name}SiteMapBucket`, {
+      access: 'cloudfront',
+      versioning: false,
+      transform: {
+        bucket: {
+          bucket: `${$app.name}-${$app.stage}-${args.id}-site-map`,
+        },
+      },
+    });
+
+    const mapRouter = new sst.aws.Router(`${name}SiteMapRouter`, {
+      domain: {
+        name: $interpolate`map.${args.domainName}`,
+        dns: sst.aws.dns({
+          zone: args.hostedZone.id,
+        }),
+      },
+      invalidation: true,
+      routes: {
+        '/*': {
+          bucket: mapBucket,
+          edge: {
+            viewerRequest: {
+              injection: `
+            var request = event.request;
+            var uri = event.request.uri;
+            if (uri.endsWith('/')) {
+              // check whether the URI is missing a file name
+              request.uri += 'index.html';
+            } else if (!uri.includes('.')) {
+              // check whether the URI is missing a file extension
+              request.uri += '/index.html';
+            }
+          `,
+            },
+          },
+        },
+      },
+    });
+
+    const mapSyncLogGroup = new aws.cloudwatch.LogGroup(`${name}MapsyncLogGroup`, {
+      name: `/${$app.name}/${$app.stage}/${args.id}/mapsync`,
+    });
+    const taskDefinition = new aws.ecs.TaskDefinition(`${name}MapsyncTaskDefinition`, {
+      family: $interpolate`${options.taskName}-mapsync`,
+      executionRoleArn: options.executionRole.arn,
+      taskRoleArn: options.taskRole.arn,
+      networkMode: 'awsvpc',
+      requiresCompatibilities: ['FARGATE'],
+      cpu: args.cpu.toString(),
+      memory: args.memory.toString(),
+      volumes: [
+        {
+          name: args.id,
+          efsVolumeConfiguration: {
+            transitEncryption: 'ENABLED',
+            fileSystemId: options.fileSystem.id,
+            authorizationConfig: {
+              accessPointId: options.accessPoint.id,
+              iam: 'ENABLED',
+            },
+          },
+        },
+      ],
+      containerDefinitions: containerDefinitions([
+        {
+          name: `${$app.name}-${$app.stage}-${args.id}-mapsync`,
+          image: config.mapsyncImage,
+          essential: true,
+          environment: {
+            BUCKET_NAME: mapBucket.name,
+          },
+          logGroupName: mapSyncLogGroup.name,
+          mountPoints: [
+            {
+              containerPath: '/data',
+              sourceVolume: args.id,
+              readOnly: true,
+            },
+          ],
+        },
+      ]),
+    });
+    const eventRole = new aws.iam.Role(`${name}MapsyncEventRole`, {
+      name: `${$app.name}-${$app.stage}-${args.id}-mapsync-role`,
+      assumeRolePolicy: {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: {
+              Service: 'events.amazonaws.com',
+            },
+            Action: 'sts:AssumeRole',
+          },
+        ],
+      },
+    });
+    const eventRolePolicy = new aws.iam.RolePolicy(`${name}MapsyncEventRolePolicy`, {
+      role: eventRole,
+      name: $interpolate`${$app.name}-${$app.stage}-${args.id}-mapsync-role-policy`,
+      policy: {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Action: 'iam:PassRole',
+            Resource: [options.taskRole.arn, options.executionRole.arn],
+          },
+          {
+            Effect: 'Allow',
+            Action: 'ecs:RunTask',
+            Resource: taskDefinition.arn,
+          },
+        ],
+      },
+    });
+    const eventRule = new aws.cloudwatch.EventRule(`${name}MapsyncRule`, {
+      name: `${options.serviceName}-mapsync`,
+      scheduleExpression: 'cron(0 0 ? * MON *)',
+      state: 'ENABLED',
+      roleArn: eventRole.arn,
+    });
+    new aws.cloudwatch.EventTarget(`${name}MapSyncTarget`, {
+      rule: eventRule.name,
+      arn: args.cluster.arn,
+      roleArn: eventRole.arn,
+      ecsTarget: {
+        launchType: 'FARGATE',
+        taskDefinitionArn: taskDefinition.arn,
+        networkConfiguration: {
+          assignPublicIp: true,
+          securityGroups: [options.securityGroup.id],
+          subnets: args.vpc.publicSubnets,
+        },
+      },
+    });
+
+    return {
+      mapTaskDefinition: taskDefinition,
+    };
   }
 }

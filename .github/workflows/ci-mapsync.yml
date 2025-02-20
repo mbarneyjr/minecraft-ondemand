@@ -1,0 +1,29 @@
+name: ci-mapsync
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: '*'
+    tags: 'mapsync*'
+
+permissions:
+  id-token: write
+  contents: write
+  packages: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assume role
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::${{ secrets.DEVOPS_ACCOUNT_ID }}:role/github-actions
+          role-session-name: GitHubActions-${{ github.run_id }}
+      - name: Deploy
+        run: |
+          cd infra/mapsync
+          npm ci
+          npm run deploy

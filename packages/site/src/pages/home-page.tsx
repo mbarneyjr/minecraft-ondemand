@@ -15,7 +15,7 @@ const Hero: FC = (props) => {
   return (
     <section className="mx-auto flex min-h-64 flex-col items-center justify-center bg-gradient-to-b from-green-600 to-green-400 text-center text-white">
       <h1 className="font-green-100 py-8 text-4xl font-bold">
-        Welcome to <span className="text-yellow-300">{Resource.Config.rootDomainName}</span>
+        Welcome to <span className="text-yellow-300">{Resource.ConfigLink.rootDomainName}</span>
       </h1>
       <p className="py-8">My on-demand Minecraft server</p>
     </section>
@@ -113,7 +113,7 @@ const Join: FC<PropsWithChildren<{ c: Context }>> = (props) => {
         </form>
         <p className="text-xl font-medium text-green-700">
           Your request will be reviewed. Add{' '}
-          <span className="font-mono text-green-400">{Resource.Config.rootDomainName}</span> in your server list.
+          <span className="font-mono text-green-400">{Resource.ConfigLink.rootDomainName}</span> in your server list.
         </p>
         {message !== undefined ? (
           <div className={`${messageStyles} flex items-center justify-center gap-1 p-4`}>

@@ -3,9 +3,11 @@ import { Context } from 'hono';
 import { createFactory } from 'hono/factory';
 import { Whitelist } from '@minecraft-ondemand/core/whitelist';
 import { Service } from '@minecraft-ondemand/core/service';
+import { Mapsync } from '@minecraft-ondemand/core/mapsync';
 import { Layout } from '#src/components/layout.js';
 import { DeleteIcon } from '#src/icons/delete.js';
 import { getAuth, protectedMiddleware } from '#src/middleware/oidc.js';
+import { Resource } from 'sst';
 
 const factory = createFactory();
 
@@ -32,10 +34,28 @@ admin.post('/server-status', protectedMiddleware, async (c) => {
   return c.redirect('/admin');
 });
 
+admin.post('/mapsync', protectedMiddleware, async (c) => {
+  const body = await c.req.formData();
+  await Mapsync.startMapsync();
+  return c.redirect('/admin');
+});
+
+admin.post('/keep-alive', protectedMiddleware, async (c) => {
+  const body = await c.req.formData();
+  if (body.has('enable')) {
+    await Service.setKeepalive({ enabled: true });
+  }
+  if (body.has('disable')) {
+    await Service.setKeepalive({ enabled: false });
+  }
+  return c.redirect('/admin');
+});
+
 admin.get('/', protectedMiddleware, async (c) => {
   const auth = c.get('auth');
   const users = Whitelist.listUsers('vanilla');
   const serviceStatus = await Service.getStatus();
+  const keepAlive = await Service.getKeepalive();
   const now = new Date();
   return c.html(
     <Layout c={c}>
@@ -70,6 +90,36 @@ admin.get('/', protectedMiddleware, async (c) => {
               value="stop"
             >
               Stop
+            </button>
+          </form>
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <h2 className="text-xl">Keep Alive:</h2>
+            <p className="text-center text-lg">
+              Status: <span className="font-mono font-semibold">{keepAlive ? 'enabled' : 'disabled'}</span>
+            </p>
+          </div>
+          <form action="/admin/keep-alive" method="post" className="flex flex-col gap-4 sm:flex-row">
+            <button
+              type="submit"
+              className="min-w-fit flex-grow rounded-lg bg-green-800 p-4 font-bold text-white"
+              name="enable"
+              value="enable"
+            >
+              Enable
+            </button>
+            <button
+              type="submit"
+              className="min-w-fit flex-grow rounded-lg bg-red-800 p-4 font-bold text-white"
+              name="disable"
+              value="disable"
+            >
+              Disable
+            </button>
+          </form>
+          <h2 className="text-xl">Map Sync:</h2>
+          <form action="/admin/mapsync" method="post" className="flex flex-col gap-4 sm:flex-row">
+            <button type="submit" className="w-full min-w-fit rounded-lg bg-green-800 p-4 font-bold text-white">
+              Update Map
             </button>
           </form>
         </div>

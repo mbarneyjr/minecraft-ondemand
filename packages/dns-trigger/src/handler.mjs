@@ -5,7 +5,7 @@ import { SSM, GetParameterCommand } from '@aws-sdk/client-ssm';
 
 const ssm = new SSM();
 const ecs = new ECS({
-  region: Resource.TargetRegion.name,
+  region: Resource.TargetRegionLink.name,
 });
 
 /** @type {import('aws-lambda').CloudWatchLogsHandler} event */

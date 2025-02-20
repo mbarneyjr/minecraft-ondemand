@@ -6,11 +6,7 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "AppClientLink": {
-      "clientId": string
-      "type": "sst.sst.Linkable"
-    }
-    "Config": {
+    "ConfigLink": {
       "rootDomainName": string
       "type": "sst.sst.Linkable"
     }
@@ -27,11 +23,11 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
-    "Ipv6Proxy": {
+    "Ipv6ProxyLink": {
       "domainName": string
       "type": "sst.sst.Linkable"
     }
-    "MountPath": {
+    "MountPathLink": {
       "path": string
       "type": "sst.sst.Linkable"
     }
@@ -39,7 +35,7 @@ declare module "sst" {
       "ip": string
       "type": "sst.sst.Linkable"
     }
-    "Oidc": {
+    "OidcLink": {
       "authSecret": string
       "clientId": string
       "clientSecret": string
@@ -61,7 +57,7 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
-    "TargetRegion": {
+    "TargetRegionLink": {
       "name": string
       "type": "sst.sst.Linkable"
     }
@@ -76,6 +72,24 @@ declare module "sst" {
     "VanillaNotifier": {
       "name": string
       "type": "sst.aws.Function"
+    }
+    "VanillaServiceLink": {
+      "type": "sst.sst.Linkable"
+      "vanillaCluster": string
+      "vanillaDomainName": string
+      "vanillaId": string
+      "vanillaMapTaskDefinition": string
+      "vanillaSecurityGroup": string
+      "vanillaSubnets": any
+      "vanillaTaskDefinition": string
+    }
+    "VanillaSiteMapBucket": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
+    "VanillaSiteMapRouter": {
+      "type": "sst.aws.Router"
+      "url": string
     }
     "Vpc": {
       "bastion": string

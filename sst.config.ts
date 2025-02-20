@@ -10,7 +10,7 @@ export default $config({
   },
   async run() {
     const infra = await import('./infra/app');
-    const services = infra.services.reduce((acc, service) => {
+    const services = infra.service.services.reduce((acc, service) => {
       return Object.assign(acc, { [service.id]: service.domainName });
     }, {});
     return {

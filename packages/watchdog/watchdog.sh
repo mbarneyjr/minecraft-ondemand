@@ -160,7 +160,8 @@ done
 
 echo "We believe a connection has been made, switching to shutdown watcher."
 COUNTER=0
-while [ $COUNTER -le $SHUTDOWNMIN ]
+# while [ $COUNTER -le $SHUTDOWNMIN ]
+while true
 do
   [ "$EDITION" == "java" ] && CONNECTIONS=$(netstat -atn | grep :25565 | grep ESTABLISHED | wc -l)
   [ "$EDITION" == "bedrock" ] && CONNECTIONS=$((echo -en "$BEDROCKPING" && sleep 1) | ncat -w 1 -u 127.0.0.1 19132 | cut -c34- | awk -F\; '{ print $5 }')
@@ -195,8 +196,19 @@ do
     [ $COUNTER -gt 0 ] && echo "New connections active, zeroing counter."
     COUNTER=0
   fi
+  if [ $COUNTER -gt $SHUTDOWNMIN ]
+  then
+    KEEPALIVE=$(aws ssm get-parameter --name /${SERVICE}/keepalive --query Parameter.Value --output text)
+    # if not keepalive is not "true", zero_service
+    if [ "$KEEPALIVE" != "true" ]
+    then
+      echo "$SHUTDOWNMIN minutes elapsed without a connection, terminating."
+      zero_service
+    else
+      echo "Would shutdown, but keepalive is enabled."
+    fi
+  fi
+  # wait a minute
   for i in $(seq 1 59) ; do sleep 1; done
 done
 
-echo "$SHUTDOWNMIN minutes elapsed without a connection, terminating."
-zero_service

@@ -16,6 +16,7 @@ type Config = {
   motd: string;
   ops: string[];
   watchdogImage: string;
+  mapsyncImage: string;
   hostedZoneName: string;
   rootDomainName: string;
   createDashboard: boolean;
@@ -59,11 +60,12 @@ const defaultConfig: Config = {
   cidrBlock: '10.67.0.0/16',
   ipv6IpamPoolId,
   ipv6CidrBlock: '2600:1f26:17:cf00::/56',
-  cpu: 2048,
+  cpu: 4096,
   memory: 16 * 1024,
   motd: 'Minecraft On-Demand',
   ops: ['Lexicham', 'Lexicam'],
-  watchdogImage: '512329539140.dkr.ecr.us-east-2.amazonaws.com/minecraft-ondemand-watchdog:0.0.2',
+  watchdogImage: '512329539140.dkr.ecr.us-east-2.amazonaws.com/minecraft-ondemand-watchdog:0.0.3',
+  mapsyncImage: '512329539140.dkr.ecr.us-east-2.amazonaws.com/minecraft-ondemand-mapsync:0.0.0',
   hostedZoneName: process.env.HOSTED_ZONE_NAME ?? `dev.${baseDomainName}`,
   rootDomainName: process.env.DOMAIN_NAME ?? `${$app.stage}.dev.${baseDomainName}`,
   createDashboard: Boolean(process.env.CREATE_DASHBOARD),
@@ -76,5 +78,11 @@ const providers = {
     region: 'us-east-1',
   }),
 };
+
+export const configLink = new sst.Linkable('ConfigLink', {
+  properties: {
+    rootDomainName: config.rootDomainName,
+  },
+});
 
 export { config, providers };

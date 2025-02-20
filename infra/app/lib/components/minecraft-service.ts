@@ -174,7 +174,7 @@ export class MinecraftService {
     },
   ) {
     const keepAliveParameter = new aws.ssm.Parameter(`${name}KeepAliveParameter`, {
-      name: $interpolate`/${$app.name}/${$app.stage}/${args.id}/keepalive`,
+      name: $interpolate`/${options.serviceName}/keepalive`,
       type: 'String',
       value: 'false',
     });

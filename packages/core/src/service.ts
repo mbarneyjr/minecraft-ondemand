@@ -67,7 +67,7 @@ export class Service {
   static async getKeepalive() {
     const response = await Service.ssm().send(
       new GetParameterCommand({
-        Name: `/${Resource.App.name}/${Resource.App.stage}/vanilla/keepalive`,
+        Name: `/${Resource.App.name}-${Resource.App.stage}-vanilla/keepalive`,
       }),
     );
     if (response.Parameter?.Value === 'true') return true;
@@ -77,7 +77,7 @@ export class Service {
   static async setKeepalive(options: { enabled: boolean }) {
     const response = await Service.ssm().send(
       new PutParameterCommand({
-        Name: `/${Resource.App.name}/${Resource.App.stage}/vanilla/keepalive`,
+        Name: `/${Resource.App.name}-${Resource.App.stage}-vanilla/keepalive`,
         Value: options.enabled ? 'true' : 'false',
         Overwrite: true,
       }),

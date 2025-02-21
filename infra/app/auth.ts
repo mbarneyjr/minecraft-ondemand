@@ -42,6 +42,10 @@ export const appClient = new aws.cognito.UserPoolClient('AppClient', {
   allowedOauthFlows: ['code'],
   allowedOauthScopes: ['openid'],
   generateSecret: true,
+  tokenValidityUnits: {
+    refreshToken: 'days',
+  },
+  refreshTokenValidity: 30,
 });
 export const oidcLink = new sst.Linkable('OidcLink', {
   properties: {

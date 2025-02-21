@@ -1,6 +1,7 @@
 export function dynmapConfig() {
   return {
     deftemplatesuffix: 'hires',
+    defaulttilescale: 2,
     storage: {
       type: 'filetree',
     },
@@ -90,7 +91,7 @@ export function dynmapConfig() {
     maxchunkspertick: 200,
     progressloginterval: 100,
     parallelrendercnt: 4,
-    updaterate: 600000,
+    updaterate: 600,
     fullrenderplayerlimit: 0,
     updateplayerlimit: 0,
     'per-tick-time-limit': 50,

@@ -415,7 +415,7 @@ export class MinecraftService {
               },
               {
                 Effect: 'Allow',
-                Action: ['s3:ListBucket', 's3:GetObject', 's3:PutObject'],
+                Action: ['s3:ListBucket', 's3:GetObject', 's3:PutObject', 's3:DeleteObject'],
                 Resource: '*',
               },
             ],

@@ -27,7 +27,7 @@ export const vanillaService = new MinecraftService('Vanilla', {
     EULA: 'TRUE',
     TYPE: 'PAPER',
     OVERRIDE_SERVER_PROPERTIES: 'true',
-    VERSION: '1.20.4',
+    VERSION: '1.21.4',
     MOTD: config.motd,
     SEED: config.seed,
     DIFFICULTY: 'hard',

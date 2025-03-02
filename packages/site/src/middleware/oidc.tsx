@@ -239,5 +239,5 @@ export const { authMiddleware, protectedMiddleware, installAuthRoutes, getAuth }
   scopes: Resource.OidcLink.scopes,
   redirectUri: Resource.OidcLink.redirectUri,
   cookieName: 'auth',
-  sessionDuration: 60 * 60 * 24 * 1,
+  sessionDuration: 60 * 60 * 24 * 30,
 });

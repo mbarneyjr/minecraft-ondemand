@@ -97,7 +97,7 @@ async function updateSession(
   const claims = oauth.getValidatedIdTokenClaims(idTokenResult)!;
   const sessionParseResult = sessionSchema.safeParse({
     ...claims,
-    exp: Math.min(now() + config.sessionDuration, claims.exp),
+    exp: now() + config.sessionDuration,
     rtk: idTokenResult.refresh_token ?? originalSession?.rtk,
   });
   if (!sessionParseResult.success) {
